@@ -1,0 +1,38 @@
+---
+- name: Install Nova XKB layout
+  hosts: localhost
+
+  tasks:
+    - name: Abort if not running on Fedora 43
+      ansible.builtin.fail:
+        msg: >
+          This playbook is only valid for Fedora 43.
+          Detected {{ ansible_distribution }} {{ ansible_distribution_major_version }} instead.
+      when: >
+        ansible_distribution != "Fedora" or
+        ansible_distribution_major_version|string != "43"
+
+    - name: Ensure ~/.config/xkb/rules directory exists
+      file:
+        path: "/home/{{ ansible_user_id }}/.config/xkb/rules"
+        state: directory
+        mode: "0755"
+
+    - name: Ensure ~/.config/xkb/symbols directory exists
+      file:
+        path: "/home/{{ ansible_user_id }}/.config/xkb/symbols"
+        state: directory
+        mode: "0755"
+
+    - name: Install nova XML rule
+      copy:
+        src: files/nova.xml
+        dest: "/home/{{ ansible_user_id }}/.config/xkb/rules/nova.xml"
+        mode: "0644"
+
+    - name: Install nova symbols file
+      copy:
+        src: files/us-nova
+        dest: "/home/{{ ansible_user_id }}/.config/xkb/symbols/us-nova"
+        mode: "0644"
+
