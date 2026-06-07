@@ -32,38 +32,38 @@ xkb_symbols "base" {
     // L1/L2: standard US. L3/L4: symbols from Nova's table.
     // Pass-through "⋄" → NoSymbol here.
 
-    key <TLDE> { [ grave,      asciitilde,        NoSymbol,     NoSymbol     ] };
+    key <TLDE> { [ grave,      asciitilde,        U2393,        U23E6        ] }; // `, ~, ⎓, ⏦
 
     key <AE01> { [ 1,          exclam,            U203C,        U26A0        ] }; // 1, !, ‼, ⚠
-    key <AE02> { [ 2,          at,                U20BF,        NoSymbol     ] }; // 2, @, ₿
+    key <AE02> { [ 2,          at,                U20BF,        U2621        ] }; // 2, @, ₿, ☡
     key <AE03> { [ 3,          numbersign,        U03C0,        U03C4        ] }; // 3, #, π, τ
     key <AE04> { [ 4,          dollar,            U20B9,        U03C6        ] }; // 4, $, ₹, φ
-    key <AE05> { [ 5,          percent,           U20AC,        U03B8        ] }; // 5, %, €, θ
-    key <AE06> { [ 6,          asciicircum,       U2211,        NoSymbol     ] }; // 6, ^, ∑
-    key <AE07> { [ 7,          ampersand,         NoSymbol,     NoSymbol     ] };
-    key <AE08> { [ 8,          asterisk,          NoSymbol,     NoSymbol     ] };
+    key <AE05> { [ 5,          percent,           U20AC,        U214C        ] }; // 5, %, €, ⅌
+    key <AE06> { [ 6,          asciicircum,       U2211,        U03B8        ] }; // 6, ^, ∑, θ
+    key <AE07> { [ 7,          ampersand,         U214B,        U2295        ] }; // 7, &, ⅋, ⊕
+    key <AE08> { [ 8,          asterisk,          U2042,        U2297        ] }; // 8, *, ⁂, ⊗
     key <AE09> { [ 9,          parenleft,         U25B3,        U0394        ] }; // 9, (, △, Δ
-    key <AE10> { [ 0,          parenright,        U2610,        U25CB        ] }; // 0, ), ☐, ○ (circle, not large circle)
-    key <AE11> { [ minus,      underscore,        U1F12F,       NoSymbol     ] }; // -, _, 🄯 (copyleft)
+    key <AE10> { [ 0,          parenright,        U25CB,        U2610        ] }; // 0, ), ○, ☐
+    key <AE11> { [ minus,      underscore,        U1F12F,       U1F16D       ] }; // -, _, 🄯, 🅭
     key <AE12> { [ equal,      plus,              U2248,        U2261        ] }; // =, +, ≈, ≡
 
     // ---------------------------------------------------------------------
     // Q row (Q W E R T Y U I O P [ ] \)
 
-    key <AD01> { [ q,          Q,                 NoSymbol,     NoSymbol     ] };
+    key <AD01> { [ q,          Q,                 U2620,        U2205        ] }; // ☠, ∅
     key <AD02> { [ w,          W,                 U016D,        U016C        ] }; // ŭ, Ŭ
     key <AD03> { [ e,          E,                 U00EB,        U00CB        ] }; // ë, Ë
     key <AD04> { [ r,          R,                 U01BF,        U01F7        ] }; // ƿ, Ƿ
-    key <AD05> { [ t,          T,                 U00DE,        U00FE        ] }; // Þ, þ
+    key <AD05> { [ t,          T,                 U00FE,        U00DE        ] }; // þ, Þ
     key <AD06> { [ y,          Y,                 U2713,        U2611        ] }; // ✓, ☑
-    key <AD07> { [ u,          U,                 U016D,        U016C        ] }; // ŭ, Ŭ
+    key <AD07> { [ u,          U,                 U00FC,        U00DC        ] }; // ŭ, Ŭ
     key <AD08> { [ i,          I,                 U00EF,        U00CF        ] }; // ï, Ï
     key <AD09> { [ o,          O,                 U00F6,        U00D6        ] }; // ö, Ö
     key <AD10> { [ p,          P,                 U03A6,        U2117        ] }; // Φ, ℗
 
-    key <AD11> { [ bracketleft,  braceleft,       NoSymbol,     NoSymbol     ] };
-    key <AD12> { [ bracketright, braceright,      NoSymbol,     NoSymbol     ] };
-    key <BKSL> { [ backslash,    bar,             NoSymbol,     NoSymbol     ] };
+    key <AD11> { [ bracketleft,  braceleft,       U29D8,        U2235        ] };
+    key <AD12> { [ bracketright, braceright,      U29D9,        U2234        ] };
+    key <BKSL> { [ backslash,    bar,             U2763,        U2762        ] };
 
     // ---------------------------------------------------------------------
     // A row (A S D F G H J K L ; ')
@@ -76,21 +76,21 @@ xkb_symbols "base" {
     key <AC06> { [ h,          H,                 U0125,        U0124        ] }; // ĥ, Ĥ
     key <AC07> { [ j,          J,                 U0135,        U0134        ] }; // ĵ, Ĵ
     key <AC08> { [ k,          K,                 U021D,        U021C        ] }; // ȝ, Ȝ
-    key <AC09> { [ l,          L,                 U03BB,        NoSymbol     ] }; // λ
+    key <AC09> { [ l,          L,                 U03BB,        U1F91F       ] }; // λ, 🤟
 
     key <AC10> { [ semicolon,  colon,             U2236,        U2237        ] }; // ∶, ∷
-    key <AC11> { [ apostrophe, quotedbl,          NoSymbol,     NoSymbol     ] };
+    key <AC11> { [ apostrophe, quotedbl,          U2032,        U2033        ] };
 
     // ---------------------------------------------------------------------
     // Z row (Z X C V B N M , . /)
 
-    key <AB01> { [ z,          Z,                 U03A9,        NoSymbol     ] }; // Ω
+    key <AB01> { [ z,          Z,                 U03A9,        U269B        ] };
     key <AB02> { [ x,          X,                 U0192,        U017F        ] }; // ƒ, ſ
     key <AB03> { [ c,          C,                 U0109,        U0108        ] }; // ĉ, Ĉ
-    key <AB04> { [ v,          V,                 NoSymbol,     NoSymbol     ] };
+    key <AB04> { [ v,          V,                 U2622,        U2623        ] };
     key <AB05> { [ b,          B,                 U03B2,        U03B1        ] }; // β, α
     key <AB06> { [ n,          N,                 U2717,        U2612        ] }; // ✗, ☒
-    key <AB07> { [ m,          M,                 U03BC,        NoSymbol     ] }; // μ
+    key <AB07> { [ m,          M,                 U2695,        U211E        ] };
 
     key <AB08> { [ comma,      less,              U2264,        U2272        ] }; // ≤, ≲
     key <AB09> { [ period,     greater,           U2265,        U2273        ] }; // ≥, ≳
@@ -99,11 +99,11 @@ xkb_symbols "base" {
     // ---------------------------------------------------------------------
     // Arrow keys and space
 
-    key <UP>   { [ Up,    Up,    U2191, U21D1 ] }; // ↑, ⇑
-    key <LEFT> { [ Left,  Left,  U2190, U21D0 ] }; // ←, ⇐
-    key <DOWN> { [ Down,  Down,  U2193, U21D3 ] }; // ↓, ⇓
-    key <RGHT> { [ Right, Right, U2192, U21D2 ] }; // →, ⇒
+    key <UP>   { [ Up,    Up,    U2191, U1F446 ] }; // ↑, 👆
+    key <LEFT> { [ Left,  Left,  U2190, U1F448 ] }; // ←, 👈
+    key <DOWN> { [ Down,  Down,  U2193, U1F447 ] }; // ↓, 👇
+    key <RGHT> { [ Right, Right, U2192, U1F449 ] }; // →, 👉
 
-    key <SPCE> { [ space, space, nobreakspace, U200B ] }; // NBSP, ZWSP
+    key <SPCE> { [ space, space, U202F, U00AD ] }; // NNBSP, SHY
 };
 

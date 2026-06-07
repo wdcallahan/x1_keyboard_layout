@@ -1,0 +1,29 @@
+---
+- name: Install Nova XKB layout
+  hosts: localhost
+
+  tasks:
+    - name: Install nova symbols file
+      ansible.builtin.copy:
+        src: files/us-nova
+        dest: "{{ ansible_env.HOME }}/.config/xkb/symbols/us-nova"
+        mode: "0644"
+
+    - name: Get current input sources
+      ansible.builtin.command:
+        cmd: gsettings get org.gnome.desktop.input-sources sources
+      register: current_sources
+      changed_when: false
+
+    - name: Set GNOME input sources to Nova layout
+      ansible.builtin.command:
+        cmd: >
+          gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us-nova')]"
+      when: "'us-nova' not in current_sources.stdout"
+      changed_when: true
+    - name: Verify Nova layout is active
+      ansible.builtin.command:
+        cmd: gsettings get org.gnome.desktop.input-sources sources
+      register: gsettings_sources
+      changed_when: false
+      failed_when: "'us-nova' not in gsettings_sources.stdout"
