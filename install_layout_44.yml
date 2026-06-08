@@ -27,3 +27,32 @@
       register: gsettings_sources
       changed_when: false
       failed_when: "'us-nova' not in gsettings_sources.stdout"
+    - name: Ensure both Shifts toggle Caps Lock
+      block:
+        - name: Read current XKB options
+          ansible.builtin.command:
+            cmd: gsettings get org.gnome.desktop.input-sources xkb-options
+          register: current_xkb_options
+          changed_when: false
+
+        - name: Verify both-shift Caps option is already set
+          ansible.builtin.fail:
+            msg: "shift:both_capslock is not set"
+          when: "'shift:both_capslock' not in current_xkb_options.stdout"
+
+      rescue:
+        - name: Set both-shift Caps option
+          ansible.builtin.command:
+            cmd: >
+              gsettings set org.gnome.desktop.input-sources xkb-options "['shift:both_capslock']"
+
+        - name: Read XKB options after setting
+          ansible.builtin.command:
+            cmd: gsettings get org.gnome.desktop.input-sources xkb-options
+          register: updated_xkb_options
+          changed_when: false
+
+        - name: Verify both-shift Caps option is now set
+          ansible.builtin.fail:
+            msg: "Failed to set shift:both_capslock"
+          when: "'shift:both_capslock' not in updated_xkb_options.stdout"
