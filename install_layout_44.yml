@@ -6,7 +6,7 @@
     - name: Install nova symbols file
       ansible.builtin.copy:
         src: files/us-nova
-        dest: "{{ ansible_env.HOME }}/.config/xkb/symbols/us-nova"
+        dest: "{{ ansible_facts.env.HOME }}/.config/xkb/symbols/us-nova"
         mode: "0644"
 
     - name: Get current input sources

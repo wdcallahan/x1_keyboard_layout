@@ -8,25 +8,22 @@ xkb_symbols "base" {
 
     name[Group1] = "Nova custom 4-level";
 
-    // --- Function-key bridge keys (from firmware Caps/RAlt/Fn/Menu/RCtrl) ---
-    // Caps → F21 → Hyper (software listens for Hyper_L, not a modifier)
-    key <FK21> { [ Hyper_L ] };
+    // --- Programmable-button bridge keys from QMK ---
+    // PB11/PB12/PB25/PB27/PB29 arrive as XKB key names
+    // I674/I675/I688/I690/I692.
 
-    // Right Alt → F22 → Compose / Multi_key
-    key <FK22> { [ Multi_key ] };
+    key <I674> { [ Hyper_L ] };           // PB11 → Hyper
+    key <I675> { [ Multi_key ] };         // PB12 → Compose
+    key <I688> { [ ISO_Level3_Shift ] };  // PB25 → AltGr / Level3
+    key <I690> { [ Meta_R ] };            // PB27 → Meta
+    key <I692> { [ ISO_Level5_Shift ] };  // PB29 → Level5
 
-    // Menu → F23 → Meta (XKB Mod3)
-    key <FK23> { [ Meta_R ] };
-
-    // Right Ctrl → F24 → AltGr (ISO_Level3_Shift, XKB Mod5)
-    key <FK24> { [ ISO_Level3_Shift ] };
-
-    // Modifier mapping: Meta_R → Mod3, AltGr → Mod5
+    modifier_map Mod2 { ISO_Level5_Shift };
     modifier_map Mod3 { Meta_R };
     modifier_map Mod5 { ISO_Level3_Shift };
-    // Intentionally *no* modifier_map entry for Hyper_L;
-    // it is a plain keysym used by userland software.
 
+    // Intentionally no modifier_map entry for Hyper_L.
+    // Hyper is a plain keysym used by userland software.
     // ---------------------------------------------------------------------
     // Number row (` 1 2 3 4 5 6 7 8 9 0 - =)
     // L1/L2: standard US. L3/L4: symbols from Nova's table.
