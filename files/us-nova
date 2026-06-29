@@ -30,7 +30,6 @@ xkb_symbols "base" {
     // Pass-through "⋄" → NoSymbol here.
 
     key <TLDE> { [ grave,      asciitilde,        U2393,        U23E6        ] }; // `, ~, ⎓, ⏦
-
     key <AE01> { [ 1,          exclam,            U203C,        U26A0        ] }; // 1, !, ‼, ⚠
     key <AE02> { [ 2,          at,                U20BF,        U2621        ] }; // 2, @, ₿, ☡
     key <AE03> { [ 3,          numbersign,        U03C0,        U03C4        ] }; // 3, #, π, τ
@@ -57,10 +56,9 @@ xkb_symbols "base" {
     key <AD08> { [ i,          I,                 U00EF,        U00CF        ] }; // ï, Ï
     key <AD09> { [ o,          O,                 U00F6,        U00D6        ] }; // ö, Ö
     key <AD10> { [ p,          P,                 U03A6,        U2117        ] }; // Φ, ℗
-
-    key <AD11> { [ bracketleft,  braceleft,       U29D8,        U2235        ] };
-    key <AD12> { [ bracketright, braceright,      U29D9,        U2234        ] };
-    key <BKSL> { [ backslash,    bar,             U2763,        U2762        ] };
+    key <AD11> { [ bracketleft,  braceleft,       U29D8,        U2235        ] }; // ⧘, ∵
+    key <AD12> { [ bracketright, braceright,      U29D9,        U2234        ] }; // ⧙, ∴ 
+    key <BKSL> { [ backslash,    bar,             U2763,        U2762        ] }; // ❣, ❢
 
     // ---------------------------------------------------------------------
     // A row (A S D F G H J K L ; ')
@@ -74,21 +72,19 @@ xkb_symbols "base" {
     key <AC07> { [ j,          J,                 U0135,        U0134        ] }; // ĵ, Ĵ
     key <AC08> { [ k,          K,                 U021D,        U021C        ] }; // ȝ, Ȝ
     key <AC09> { [ l,          L,                 U03BB,        U1F91F       ] }; // λ, 🤟
-
     key <AC10> { [ semicolon,  colon,             U2236,        U2237        ] }; // ∶, ∷
-    key <AC11> { [ apostrophe, quotedbl,          U2032,        U2033        ] };
+    key <AC11> { [ apostrophe, quotedbl,          U2032,        U2033        ] }; // ′, ″
 
     // ---------------------------------------------------------------------
     // Z row (Z X C V B N M , . /)
 
-    key <AB01> { [ z,          Z,                 U03A9,        U269B        ] };
+    key <AB01> { [ z,          Z,                 U03A9,        U269B        ] }; // Ω, ⚛
     key <AB02> { [ x,          X,                 U0192,        U017F        ] }; // ƒ, ſ
     key <AB03> { [ c,          C,                 U0109,        U0108        ] }; // ĉ, Ĉ
-    key <AB04> { [ v,          V,                 U2622,        U2623        ] };
+    key <AB04> { [ v,          V,                 U2622,        U2623        ] }; // ☢, ☣
     key <AB05> { [ b,          B,                 U03B2,        U03B1        ] }; // β, α
     key <AB06> { [ n,          N,                 U2717,        U2612        ] }; // ✗, ☒
-    key <AB07> { [ m,          M,                 U2695,        U211E        ] };
-
+    key <AB07> { [ m,          M,                 U211E,        U2695        ] }; // ℞, ⚕
     key <AB08> { [ comma,      less,              U2264,        U2272        ] }; // ≤, ≲
     key <AB09> { [ period,     greater,           U2265,        U2273        ] }; // ≥, ≳
     key <AB10> { [ slash,      question,          U2047,        U2E2E        ] }; // ⁇, ⸮
@@ -100,7 +96,6 @@ xkb_symbols "base" {
     key <LEFT> { [ Left,  Left,  U2190, U1F448 ] }; // ←, 👈
     key <DOWN> { [ Down,  Down,  U2193, U1F447 ] }; // ↓, 👇
     key <RGHT> { [ Right, Right, U2192, U1F449 ] }; // →, 👉
-
     key <SPCE> { [ space, space, U202F, U00AD ] }; // NNBSP, SHY
 };
 
