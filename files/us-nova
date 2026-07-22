@@ -40,13 +40,13 @@ xkb_symbols "base" {
     key <AE08> { [ 8,          asterisk,          U2042,        U2297        ] }; // 8, *, ⁂, ⊗
     key <AE09> { [ 9,          parenleft,         U25B3,        U0394        ] }; // 9, (, △, Δ
     key <AE10> { [ 0,          parenright,        U25CB,        U2610        ] }; // 0, ), ○, ☐
-    key <AE11> { [ minus,      underscore,        U1F12F,       U1F16D       ] }; // -, _, 🄯, 🅭
+    key <AE11> { [ minus,      underscore,        U2205,        U1F16D       ] }; // -, _, ∅, 🅭
     key <AE12> { [ equal,      plus,              U2248,        U2261        ] }; // =, +, ≈, ≡
 
     // ---------------------------------------------------------------------
     // Q row (Q W E R T Y U I O P [ ] \)
 
-    key <AD01> { [ q,          Q,                 U2620,        U2205        ] }; // ☠, ∅
+    key <AD01> { [ q,          Q,                 U2620,        U2623        ] }; // ☠, ☣
     key <AD02> { [ w,          W,                 U016D,        U016C        ] }; // ŭ, Ŭ
     key <AD03> { [ e,          E,                 U00EB,        U00CB        ] }; // ë, Ë
     key <AD04> { [ r,          R,                 U01BF,        U01F7        ] }; // ƿ, Ƿ
@@ -71,17 +71,17 @@ xkb_symbols "base" {
     key <AC06> { [ h,          H,                 U0125,        U0124        ] }; // ĥ, Ĥ
     key <AC07> { [ j,          J,                 U0135,        U0134        ] }; // ĵ, Ĵ
     key <AC08> { [ k,          K,                 U021D,        U021C        ] }; // ȝ, Ȝ
-    key <AC09> { [ l,          L,                 U03BB,        U1F91F       ] }; // λ, 🤟
+    key <AC09> { [ l,          L,                 U03BB                      ] }; // λ
     key <AC10> { [ semicolon,  colon,             U2236,        U2237        ] }; // ∶, ∷
     key <AC11> { [ apostrophe, quotedbl,          U2032,        U2033        ] }; // ′, ″
 
     // ---------------------------------------------------------------------
     // Z row (Z X C V B N M , . /)
 
-    key <AB01> { [ z,          Z,                 U03A9,        U269B        ] }; // Ω, ⚛
+    key <AB01> { [ z,          Z,                 U03A9                      ] }; // Ω
     key <AB02> { [ x,          X,                 U0192,        U017F        ] }; // ƒ, ſ
     key <AB03> { [ c,          C,                 U0109,        U0108        ] }; // ĉ, Ĉ
-    key <AB04> { [ v,          V,                 U2622,        U2623        ] }; // ☢, ☣
+    key <AB04> { [ v,          V,                 U269B,        U2622        ] }; // ⚛, ☢
     key <AB05> { [ b,          B,                 U03B2,        U03B1        ] }; // β, α
     key <AB06> { [ n,          N,                 U2717,        U2612        ] }; // ✗, ☒
     key <AB07> { [ m,          M,                 U211E,        U2695        ] }; // ℞, ⚕
