@@ -1,5 +1,5 @@
 // Nova custom 4-level layout for Lemokey X1
-// Transport profile: xkb-menu-meta-transport-v2 (2026-07-24)
+// Transport profile: xkb-menu-meta-transport-v2.1 (2026-07-24)
 // Decision record: docs/decisions/0002-separate-menu-meta-compose-transports.md
 // Based on master reference table + hardware remap (Caps/RAlt/Fn/Menu/RCtrl→F21–F24)
 // Drop this into an XKB symbols file (e.g. /etc/X11/xkb/symbols/nova)
@@ -22,11 +22,15 @@ xkb_symbols "base" {
 
     // --- Xwayland-compatible Menu and Meta transports, host stage ---
     // evdev 127 arrives as <COMP>; evdev 139 arrives as <I147>.
+    // Ordinary key declarations preserve stock Group1 and add Nova Group2.
     // Keep <I690> active until firmware migrates from PB27 to KC_APP.
-    replace key <COMP> { [ Meta_R ] };
-    replace key <I147> { [ Menu ] };
+    key <COMP> { [ Meta_R ] };
+    key <I147> { [ Menu ] };
 
     modifier_map Mod2 { ISO_Level5_Shift };
+    // The inherited US map assigns Meta_R to Mod1 by keysym. Remove that
+    // assignment before binding the <COMP> transport explicitly to Mod3.
+    modifier_map None { Meta_R };
     modifier_map Mod3 { <COMP>, <I690> };
     modifier_map Mod5 { ISO_Level3_Shift };
 
@@ -42,7 +46,7 @@ xkb_symbols "base" {
     key <AE02> { [ 2,          at,                U20BF,        U2621        ] }; // 2, @, ₿, ☡
     key <AE03> { [ 3,          numbersign,        U03C0,        U03C4        ] }; // 3, #, π, τ
     key <AE04> { [ 4,          dollar,            U20B9,        U03C6        ] }; // 4, $, ₹, φ
-    key <AE05> { [ 5,          percent,           U20AC,        U214C        ] }; // 5, %, €, ⅌
+    key <AE05> { [ 5,          percent,            U20AC,        U214C        ] }; // 5, %, €, ⅌
     key <AE06> { [ 6,          asciicircum,       U2211,        U03B8        ] }; // 6, ^, ∑, θ
     key <AE07> { [ 7,          ampersand,         U214B,        U2295        ] }; // 7, &, ⅋, ⊕
     key <AE08> { [ 8,          asterisk,          U2042,        U2297        ] }; // 8, *, ⁂, ⊗
