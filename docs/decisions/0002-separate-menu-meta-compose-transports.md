@@ -1,10 +1,11 @@
 # ADR-0002: Separate Menu, Meta, and Compose transports
 
-- **Version:** 1.0.0
+- **Version:** 1.1.0
 - **Date:** 2026-07-24
 - **Status:** Accepted for staged host validation
 - **Behavior label:** `xkb-menu-meta-transport-v2`
 - **Supersedes:** ADR-0001 / `xkb-meta-transport-v1`
+- **Validation runbook:** `docs/runbooks/validate-menu-meta-transport-v2.md`
 - **Repository owner:** `wdcallahan/x1_keyboard_layout`
 
 ## Context
@@ -101,6 +102,8 @@ After deployment and keymap reload:
 11. xterm receives the representable Meta transport through Xwayland;
 12. Ptyxis/VTE behavior is measured separately because transport visibility does not guarantee Escape-prefix terminal encoding.
 
+The executable procedure is maintained in `docs/runbooks/validate-menu-meta-transport-v2.md`.
+
 ## Validation performed before publication
 
 A representative three-group XKB keymap was compiled with `xkbcomp`. The compiled result contained:
@@ -113,6 +116,23 @@ Mod4 includes <LWIN> and <RWIN>
 ```
 
 This validates the XKB syntax and the group-specific override model. MACE remains the acceptance environment for the real native-Wayland and Xwayland maps.
+
+## Accidental branch recovery record
+
+An unnecessary remote branch named `test/low-keycode-transports-20260723` was created during the interrupted work session. It contains three unique experimental commits based on baseline `cd208643313fa5088f13b6bd0c951df021ad3b35`:
+
+- `e472124` documented a combined Compose, Right-Super Meta, and Level5 experiment;
+- `bfe25be` added a branch-oriented deployment and rollback runbook;
+- `b806d18` implemented all three experimental host mappings together.
+
+That experiment is deliberately rejected rather than merged:
+
+- `<COMP>` must remain available for the selected Meta transport, not be reassigned to Compose;
+- `<RWIN>` must remain Super, not become Meta;
+- Level5 and NumLock require a separate design and validation path;
+- project work must remain on linear `main` unless Nova explicitly requests otherwise.
+
+The useful evidence, safety rules, validation structure, and rollback discipline from the branch have been preserved in this ADR and in `docs/runbooks/validate-menu-meta-transport-v2.md`. The experimental branch code is not authoritative and should be deleted after confirming these `main` records are present.
 
 ## Deployment
 
