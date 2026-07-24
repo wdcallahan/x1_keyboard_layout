@@ -1,9 +1,10 @@
 # ADR-0001: Xwayland-compatible Meta transport
 
-- **Version:** 1.0.0
+- **Version:** 1.0.1
 - **Date:** 2026-07-23
-- **Status:** Accepted for staged host validation
+- **Status:** Superseded before host deployment
 - **Behavior label:** `xkb-meta-transport-v1`
+- **Superseded by:** ADR-0002 / `xkb-menu-meta-transport-v2`
 - **Repository owner:** `wdcallahan/x1_keyboard_layout`
 
 ## Context
@@ -87,6 +88,10 @@ The normal rollback is an explicit Git revert on `main`, followed by normal depl
 During an input failure, switch to the ordinary `us` input source before deploying the reverted version. Do not repair the Ansible-managed deployed file by hand.
 
 The documentation commit may remain as a historical record even if the behavior commit is reverted. Published history is not rewritten.
+
+## Supersession note
+
+MACE confirmed that evdev 139 reaches XKB as keycode 147 / `<I147>` with `XF86MenuKB`. ADR-0002 therefore adopts a cleaner design: `<I147>` carries Menu, `<COMP>` carries Meta, PB12 continues to carry Compose, and `<RWIN>` remains Super. This document remains as the historical record of the rejected staged alternative.
 
 ## Review triggers
 
