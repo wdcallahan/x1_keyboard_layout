@@ -1,9 +1,9 @@
 # ADR-0002: Separate Menu, Meta, and Compose transports
 
-- **Version:** 1.1.0
+- **Version:** 1.2.0
 - **Date:** 2026-07-24
 - **Status:** Accepted for staged host validation
-- **Behavior label:** `xkb-menu-meta-transport-v2`
+- **Behavior label:** `xkb-menu-meta-transport-v2.1`
 - **Supersedes:** ADR-0001 / `xkb-meta-transport-v1`
 - **Validation runbook:** `docs/runbooks/validate-menu-meta-transport-v2.md`
 - **Repository owner:** `wdcallahan/x1_keyboard_layout`
@@ -72,6 +72,31 @@ current firmware PB12 -> <I675> -> Multi_key (Compose)
 
 Firmware will not change until this host mapping passes acceptance tests.
 
+## Implementation correction: v2.1
+
+The first v2 source used `replace key` for `<COMP>` and `<I147>`. In the real two-layout GNOME arrangement, that replaced the stock key declarations instead of contributing Nova symbols to Group2. The live compiled map therefore remained:
+
+```text
+<COMP> -> Menu
+<I147> -> XF86MenuKB
+```
+
+The corrected v2.1 source uses ordinary `key` declarations. Offline compilation on MACE then produced the intended multi-group definitions:
+
+```text
+<COMP> Group1 = Menu,       Group2 = Meta_R
+<I147> Group1 = XF86MenuKB, Group2 = Menu
+```
+
+That exposed a second inherited behavior: assigning `Meta_R` in Group2 caused `<COMP>` to be selected into Mod1 by the stock US keysym-based modifier map. A key-name removal did not match that inherited keysym assignment. The working correction is:
+
+```text
+modifier_map None { Meta_R };
+modifier_map Mod3 { <COMP>, <I690> };
+```
+
+The resulting offline compiled map has `<COMP>` absent from Mod1, present on Mod3, and leaves `<RWIN>` on Mod4. This mechanism was established before spending a GNOME logout or reboot.
+
 ## Planned firmware migration after host acceptance
 
 The QMK dual-role definitions can then change as follows:
@@ -89,71 +114,71 @@ After the firmware migration is accepted, the temporary `<I690>` Meta bridge may
 
 After deployment and keymap reload:
 
-1. native Wayland shows `<COMP>` as `Meta_R` on Mod3;
-2. Xwayland shows `<COMP>` as `Meta_R` on Mod3;
+1. native Wayland shows `<COMP>` as `Meta_R` on Mod3 and not on Mod1;
+2. Xwayland shows `<COMP>` as `Meta_R` on Mod3 and not on Mod1;
 3. native Wayland group 2 shows `<I147>` as `Menu`;
 4. Xwayland group 2 shows `<I147>` as `Menu`;
 5. `<RWIN>` is again `Super_R` on Mod4;
 6. left Super remains `Super_L` on Mod4;
 7. existing PB27 / `<I690>` Meta still works in native Wayland;
 8. PB12 Compose still produces `Multi_key` and the compact `Compose, a, e -> æ` test passes;
-9. a complete synthetic Application chord releases every key and leaves no depressed modifier state;
+9. a complete synthetic Application chord releases every key, depresses Mod3 but not Mod1, and leaves no depressed modifier state;
 10. a complete synthetic Menu press opens the normal context menu where the focused application supports it;
 11. xterm receives the representable Meta transport through Xwayland;
 12. Ptyxis/VTE behavior is measured separately because transport visibility does not guarantee Escape-prefix terminal encoding.
 
 The executable procedure is maintained in `docs/runbooks/validate-menu-meta-transport-v2.md`.
 
-## Validation performed before publication
+## Validation performed before v2.1 publication
 
-A representative three-group XKB keymap was compiled with `xkbcomp`. The compiled result contained:
+The exact `us,us-nova` arrangement was compiled offline on MACE with the same rules, model, variant list, and Caps option used by the GNOME session. The receipt showed:
 
 ```text
-<COMP> Group1 = Menu, Group2 = Meta_R
-<I147> Group1 = XF86MenuKB, Group2 = Menu
-Mod3 includes <COMP>
-Mod4 includes <LWIN> and <RWIN>
+key <COMP> {
+    symbols[1] = [ Menu ],
+    symbols[2] = [ Meta_R ]
+};
+key <I147> {
+    symbols[1] = [ XF86MenuKB ],
+    symbols[2] = [ Menu ]
+};
+modifier_map Mod1 { <LALT>, <RALT>, <ALT>, <META> };
+modifier_map Mod3 { <COMP>, <LVL5>, <I690> };
+modifier_map Mod4 { <LWIN>, <RWIN>, <SUPR> };
 ```
 
-This validates the XKB syntax and the group-specific override model. MACE remains the acceptance environment for the real native-Wayland and Xwayland maps.
+This proves the corrected source compiles into the intended group and modifier ownership before deployment. The live native-Wayland and Xwayland maps remain the final host acceptance environments after one deliberate session restart.
 
 ## Accidental branch recovery record
 
-An unnecessary remote branch named `test/low-keycode-transports-20260723` was created during the interrupted work session. It contains three unique experimental commits based on baseline `cd208643313fa5088f13b6bd0c951df021ad3b35`:
+An unnecessary remote branch named `test/low-keycode-transports-20260723` was created during the interrupted work session. It contained three unique experimental commits based on baseline `cd208643313fa5088f13b6bd0c951df021ad3b35`:
 
 - `e472124` documented a combined Compose, Right-Super Meta, and Level5 experiment;
 - `bfe25be` added a branch-oriented deployment and rollback runbook;
 - `b806d18` implemented all three experimental host mappings together.
 
-That experiment is deliberately rejected rather than merged:
+That experiment was deliberately rejected rather than merged:
 
 - `<COMP>` must remain available for the selected Meta transport, not be reassigned to Compose;
 - `<RWIN>` must remain Super, not become Meta;
 - Level5 and NumLock require a separate design and validation path;
 - project work must remain on linear `main` unless Nova explicitly requests otherwise.
 
-The useful evidence, safety rules, validation structure, and rollback discipline from the branch have been preserved in this ADR and in `docs/runbooks/validate-menu-meta-transport-v2.md`. The experimental branch code is not authoritative and should be deleted after confirming these `main` records are present.
+The useful evidence, safety rules, validation structure, and rollback discipline from the branch were preserved in this ADR and in `docs/runbooks/validate-menu-meta-transport-v2.md`. The experimental branch code was not made authoritative, and the remote branch was deleted after preservation was confirmed.
 
 ## Deployment
 
 The authoritative file is `files/us-nova`. Deploy only through `install_layout.yml`; do not edit `~/.config/xkb/symbols/us-nova` by hand.
 
-A GNOME session may retain its prior compiled keymap. Switch to another input source and back, or log out and in, before judging the result.
+Compile and inspect the exact candidate offline before deployment. After deployment, verify the managed copy byte-for-byte and rerun the playbook for idempotence. Only then spend one GNOME logout or reboot to load the already-proven map.
 
 ## Rollback
 
 The normal rollback is an explicit corrective commit on `main`.
 
-To return from v2 to the earlier staged v1 behavior:
+To remove the v2.1 correction, revert commit `7db85a2c1c42ce2033969f1f4be591d273b6ef45`. Because the preceding v2 implementation did not produce the intended live map, a full return to the pre-transport baseline also requires reverting `60e8227754fd224530f40a926ed36d0876bdedac` and then `c0f3060b131120d1a19e6793b98e7c0797eb199a` in separate corrective commits.
 
-1. revert the commit that introduces `xkb-menu-meta-transport-v2`;
-2. push the revert to `origin/main`;
-3. pull `main` on MACE;
-4. run `ansible-playbook install_layout.yml`;
-5. reload the GNOME keymap;
-6. repeat the compiled-map checks.
-
-To return all the way to the pre-transport baseline, first revert the v2 behavior commit, then revert commit `c0f3060` in a second explicit revert commit, deploy, reload, and verify.
+After rollback, push `main`, pull on MACE, run `ansible-playbook install_layout.yml`, reload the GNOME keymap once, and repeat the compiled-map checks.
 
 During an input failure, switch to the ordinary `us` input source before deploying the reverted version. Published history is not rewritten.
 
