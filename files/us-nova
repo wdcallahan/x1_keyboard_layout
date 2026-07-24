@@ -1,6 +1,6 @@
 // Nova custom 4-level layout for Lemokey X1
-// Transport profile: xkb-meta-transport-v1 (2026-07-23)
-// Decision record: docs/decisions/0001-xwayland-compatible-meta-transport.md
+// Transport profile: xkb-menu-meta-transport-v2 (2026-07-24)
+// Decision record: docs/decisions/0002-separate-menu-meta-compose-transports.md
 // Based on master reference table + hardware remap (Caps/RAlt/Fn/Menu/RCtrl→F21–F24)
 // Drop this into an XKB symbols file (e.g. /etc/X11/xkb/symbols/nova)
 
@@ -20,14 +20,14 @@ xkb_symbols "base" {
     key <I690> { [ Meta_R ] };            // PB27 → Meta (native Wayland bridge)
     key <I692> { [ ISO_Level5_Shift ] };  // PB29 → Level5
 
-    // --- Xwayland-compatible Meta transport, stage 1 ---
-    // evdev 126 arrives as <RWIN>, which is representable in both native
-    // Wayland and Xwayland. Keep <I690> active until firmware migrates.
-    replace key <RWIN> { [ Meta_R ] };
-    modifier_map None { <RWIN> };
+    // --- Xwayland-compatible Menu and Meta transports, host stage ---
+    // evdev 127 arrives as <COMP>; evdev 139 arrives as <I147>.
+    // Keep <I690> active until firmware migrates from PB27 to KC_APP.
+    replace key <COMP> { [ Meta_R ] };
+    replace key <I147> { [ Menu ] };
 
     modifier_map Mod2 { ISO_Level5_Shift };
-    modifier_map Mod3 { <RWIN>, <I690> };
+    modifier_map Mod3 { <COMP>, <I690> };
     modifier_map Mod5 { ISO_Level3_Shift };
 
     // Intentionally no modifier_map entry for Hyper_L.
