@@ -1,5 +1,5 @@
 // Nova custom 4-level layout for Lemokey X1
-// Transport profile: xkb-menu-meta-transport-v2.3 (2026-07-25)
+// Transport profile: xkb-menu-meta-transport-v2.4 (2026-07-25)
 // Decision record: docs/decisions/0002-separate-menu-meta-compose-transports.md
 // Based on master reference table + hardware remap (Caps/RAlt/Fn/Menu/RCtrl→F21–F24)
 // Drop this into an XKB symbols file (e.g. /etc/X11/xkb/symbols/nova)
@@ -10,10 +10,10 @@ xkb_symbols "base" {
 
     name[Group1] = "Nova custom 4-level";
 
-    // VTE/GTK4 terminal encoding recognizes virtual Alt, not semantic Meta.
-    // Keep the dedicated key as Meta_R on real Mod3, but expose that Mod3
-    // through the Alt compatibility path so terminals emit the ESC prefix.
-    virtual_modifiers Alt;
+    // Expose the dedicated key as semantic Meta for GTK and any terminal
+    // protocol capable of carrying it. VTE's legacy encoder ignores Meta;
+    // do not alias the key to Alt.
+    virtual_modifiers Meta;
 
     // --- Programmable-button bridge keys from QMK ---
     // PB11/PB12/PB25/PB27/PB29 arrive as XKB key names
@@ -29,20 +29,21 @@ xkb_symbols "base" {
     // KC_APP arrives as evdev 127 / <COMP>.
     // KC_MENU (USB HID usage 0x76) arrives as evdev 130 / <PROP>.
     // Ordinary key declarations preserve stock Group1 and add Nova Group2.
-    // Raw Wayland/XKB still sees Meta_R and Mod3; GTK/VTE sees Alt semantics.
+    // Raw Wayland/XKB and GTK see Meta_R on real Mod3 with semantic Meta.
     key <COMP> {
         [ Meta_R ],
-        virtualModifiers = Alt
+        virtualModifiers = Meta
     };
     key <PROP> { [ Menu ] };
 
     // Retain the former KEY_MENU bridge until post-migration cleanup.
     key <I147> { [ Menu ] };
 
-    modifier_map Mod2 { ISO_Level5_Shift };
-    // The inherited US map assigns Meta_R to Mod1 by keysym. Remove that
-    // assignment before binding the <COMP> transport explicitly to Mod3.
+    // Remove inherited keysym-based assignments before binding the exact
+    // dedicated transports to their intended real modifier bits.
     modifier_map None { Meta_R };
+    modifier_map None { ISO_Level5_Shift };
+    modifier_map Mod2 { <I692> };
     modifier_map Mod3 { <COMP>, <I690> };
     modifier_map Mod5 { ISO_Level3_Shift };
 
