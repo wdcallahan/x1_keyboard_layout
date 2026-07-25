@@ -1,5 +1,5 @@
 // Nova custom 4-level layout for Lemokey X1
-// Transport profile: xkb-menu-meta-transport-v2.2 (2026-07-24)
+// Transport profile: xkb-menu-meta-transport-v2.3 (2026-07-25)
 // Decision record: docs/decisions/0002-separate-menu-meta-compose-transports.md
 // Based on master reference table + hardware remap (Caps/RAlt/Fn/Menu/RCtrl→F21–F24)
 // Drop this into an XKB symbols file (e.g. /etc/X11/xkb/symbols/nova)
@@ -10,9 +10,10 @@ xkb_symbols "base" {
 
     name[Group1] = "Nova custom 4-level";
 
-    // GTK4 applications consume semantic Meta rather than a raw Mod3 bit.
-    // Bind the virtual Meta modifier to the real Mod3 map below.
-    virtual_modifiers Meta;
+    // VTE/GTK4 terminal encoding recognizes virtual Alt, not semantic Meta.
+    // Keep the dedicated key as Meta_R on real Mod3, but expose that Mod3
+    // through the Alt compatibility path so terminals emit the ESC prefix.
+    virtual_modifiers Alt;
 
     // --- Programmable-button bridge keys from QMK ---
     // PB11/PB12/PB25/PB27/PB29 arrive as XKB key names
@@ -28,10 +29,10 @@ xkb_symbols "base" {
     // KC_APP arrives as evdev 127 / <COMP>.
     // KC_MENU (USB HID usage 0x76) arrives as evdev 130 / <PROP>.
     // Ordinary key declarations preserve stock Group1 and add Nova Group2.
-    // Explicit virtualModifiers exposes real Mod3 as semantic Meta to GTK4.
+    // Raw Wayland/XKB still sees Meta_R and Mod3; GTK/VTE sees Alt semantics.
     key <COMP> {
         [ Meta_R ],
-        virtualModifiers = Meta
+        virtualModifiers = Alt
     };
     key <PROP> { [ Menu ] };
 
