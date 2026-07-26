@@ -8,7 +8,7 @@ default partial alphanumeric_keys modifier_keys keypad_keys
 xkb_symbols "base" {
     include "us"
 
-    name[Group1] = "Nova custom 4-level";
+    name[Group1] = "Nova custom single-group";
 
     // ---------------------------------------------------------------------
     // Number row (` 1 2 3 4 5 6 7 8 9 0 - =)
@@ -68,7 +68,8 @@ xkb_symbols "base" {
     key <AB02> { [ x,          X,                 U0192,        U017F        ] }; // ƒ, ſ
     key <AB03> { [ c,          C,                 U0109,        U0108        ] }; // ĉ, Ĉ
     key <AB04> { [ v,          V,                 U269B,        U2622        ] }; // ⚛, ☢
-    key <AB05> { [ b,          B,                 U03B2,        U03B1        ] }; // β, α
+    // First deliberate eight-level key: Nova's approved B vocabulary.
+    key <AB05> { type[Group1] = "EIGHT_LEVEL_SEMIALPHABETIC", symbols[Group1] = [ b, B, U03B2, U03B1, U1F407, U1F430, U1F96C, U1F955 ] }; // β, α, 🐇, 🐰, 🥬, 🥕
     key <AB06> { [ n,          N,                 U2717,        U2612        ] }; // ✗, ☒
     key <AB07> { [ m,          M,                 U211E,        U2695        ] }; // ℞, ⚕
     key <AB08> { [ comma,      less,              U2264,        U2272        ] }; // ≤, ≲
