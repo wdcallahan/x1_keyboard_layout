@@ -300,7 +300,7 @@ Transport success and application consumption are separate. Ptyxis/VTE receiving
 
 Do not globally alias semantic Meta to Alt merely to satisfy a legacy terminal boundary. A consumer should either understand semantic Meta directly or use a deliberately narrow application/terminal adapter for the chosen chords.
 
-Meta+D remains a useful design goal because it is cleaner than multi-key prefix sequences such as Control+B then D. Super remains available for desktop/window-manager behavior; Meta remains the application command namespace. The first consumer and its boundary translation require a separate acceptance decision.
+Meta+D remains a useful design goal because it is cleaner than multi-key prefix sequences such as Control+B then D. Super remains available for desktop/window-manager behavior; Meta remains the application command namespace. The first consumer and its boundary translation require a separate acceptance decision; `docs/runbooks/validate-semantic-meta-consumer.md` owns that proof.
 
 ---
 
