@@ -453,9 +453,14 @@ indicator instead of mirroring host NumLock state.
 
 The implementation sends no synthetic NumLock key events. It preserves the
 host-driven CapsLock and ScrollLock lamps, turns all lock indicators off during
-suspend, and restores the layer indication after wake. The source change is
-recorded in `lemokey-x2-qmk` commit `daa4650f55df`; it is not live until that
-firmware has been deliberately built, flashed, and validated on MACE.
+suspend, and restores the layer indication after wake.
+
+`lemokey-x2-qmk` commit `daa4650f55df` was built, flashed, and accepted on
+MACE on 2026-07-26. Live Wayland validation showed no unsolicited idle keyboard
+events, and the former interruptions to held input, scrolling, and video
+controls were gone. In ordinary use, the blinking state immediately exposed an
+accidentally retained Mouse layer while Shift selected Scroll, confirming that
+the lamp is a useful mode indicator rather than decoration.
 
 ---
 

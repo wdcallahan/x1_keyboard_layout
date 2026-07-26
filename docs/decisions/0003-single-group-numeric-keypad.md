@@ -1,8 +1,8 @@
 # ADR-0003: Use one Nova group and an always-numeric keypad
 
-- **Version:** 1.3.0
+- **Version:** 1.4.0
 - **Date:** 2026-07-26
-- **Status:** Accepted for deployment
+- **Status:** Accepted and deployed
 - **Behavior label:** `nova-single-group-keypad-2026-07-26`
 - **Supersedes:** the separate `nova:transports` assembly from ADR-0002
 - **Validation runbook:** `docs/runbooks/validate-single-group-keypad.md`
@@ -158,8 +158,26 @@ The source-side firmware follow-up is complete in
    `SCROLL`;
 3. suspend turns the repurposed lamp off and wake restores the layer indication.
 
-One deliberate QMK build, flash, and live event validation on MACE remain. That
-deployment is separate from this host-side decision.
+### Firmware deployment receipt
+
+MACE built `lemokey-x2-qmk` commit `daa4650f55df` with QMK 0.14.29 and
+`arm-none-eabi-gcc` 15.2.0, then flashed it successfully through STM32 DFU on
+2026-07-26.
+
+Live acceptance established all of the following:
+
+1. the six-second filtered `wev` idle trace contained no unsolicited keyboard
+   event or keysym;
+2. held input, scrolling, and video playback controls are no longer interrupted
+   by periodic NumLock events;
+3. the A4 lamp is off on `BASE`, solid on `MOUSE`, and blinking on
+   `SCROLL`;
+4. the pointer and scroll layers work normally;
+5. the blinking state made an accidentally retained `MOUSE` layer immediately
+   visible while Shift temporarily selected `SCROLL`.
+
+The firmware deployment is accepted. It remains separate from the host-side
+decision so either repository can be rolled back independently.
 
 ## Rollback
 
