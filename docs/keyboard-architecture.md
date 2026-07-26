@@ -532,8 +532,9 @@ Important GNOME/XKB state:
 
 | Setting | Current intent |
 | --- | --- |
-| Input source | `us-nova` custom XKB layout. |
-| XKB option | `shift:both_capslock`. |
+| Input sources | Exactly `[('xkb', 'us-nova')]`; Nova is the sole source and sole XKB group. |
+| XKB options | Exactly `['shift:both_capslock']`. |
+| Rules extension | None; the former `nova:transports` option and `evdev.post` hook are obsolete. |
 | Stale option removed | `compose:ralt`, because there is no longer a physical Right Alt key used for Compose. |
 
 After changing the installed symbols file, GNOME may not reload the keymap immediately. A logout/login may be needed. The file being installed correctly does not guarantee the current Wayland session has rebuilt its active keymap.

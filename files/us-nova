@@ -1,10 +1,10 @@
-// Nova custom 4-level layout for Lemokey X1
-// Transport profile: xkb-menu-meta-transport-v2.8 (2026-07-25)
-// Decision record: docs/decisions/0002-separate-menu-meta-compose-transports.md
-// Based on master reference table + hardware remap (Caps/RAlt/Fn/Menu/RCtrl→F21–F24)
-// Drop this into an XKB symbols file (e.g. /etc/X11/xkb/symbols/nova)
+// Nova custom single-group layout for Lemokey X2
+// Behavior profile: nova-single-group-keypad-2026-07-26
+// Decision record: docs/decisions/0003-single-group-numeric-keypad.md
+// The layout, transport meanings, and fixed keypad behavior are deliberately
+// self-contained so GNOME does not need a second group or a post-rules option.
 
-partial alphanumeric_keys
+default partial alphanumeric_keys modifier_keys keypad_keys
 xkb_symbols "base" {
     include "us"
 
@@ -83,37 +83,58 @@ xkb_symbols "base" {
     key <DOWN> { [ Down,  Down,  U2193, U1F447 ] }; // ↓, 👇
     key <RGHT> { [ Right, Right, U2192, U1F449 ] }; // →, 👉
     key <SPCE> { [ space, space, U202F, U00AD ] }; // NNBSP, SHY
-};
 
-// This section is loaded through the nova:transports option. The evdev.post
-// rule appends it after inet(evdev), so the generic multimedia mappings cannot
-// overwrite Nova's dedicated key identities.
-partial modifier_keys
-xkb_symbols "transports" {
+    // ---------------------------------------------------------------------
+    // Dedicated firmware transports
+
     virtual_modifiers Meta;
 
-    // PB11/PB12/PB25/PB27/PB29 arrive as I674/I675/I688/I690/I692.
-    replace key <I674> { [ Hyper_L ] };           // PB11 → Hyper
-    replace key <I675> { [ Multi_key ] };         // PB12 → Compose
-    replace key <I688> { [ ISO_Level3_Shift ] };  // PB25 → AltGr / Level3
-    replace key <I690> { [ Meta_R ] };            // Legacy PB27 Meta bridge
-    replace key <I692> { [ ISO_Level5_Shift ] };  // PB29 → Level5
+    replace key <I674> { [ Hyper_L ] };             // PB11 → Hyper
+    replace key <I675> { [ Multi_key ] };           // PB12 → Compose
+    replace key <I688> { [ ISO_Level3_Shift ] };    // PB25 → AltGr / Level3
+    replace key <I689> { [ XF86Macro26 ] };         // PB26 → Any
+    replace key <I691> { [ XF86Macro28 ] };         // PB28 → Whisper
+    replace key <I692> { [ ISO_Level5_Shift ] };    // PB29 → Level5
 
-    // KC_APP arrives as <COMP>; KC_MENU usage 0x76 arrives as <PROP>.
+    // KC_APP arrives as <COMP>; KC_MENU arrives as <PROP>.
     replace key <COMP> {
         [ Meta_R ],
         virtualModifiers = Meta
     };
     replace key <PROP> { [ Menu ] };
-    replace key <I147> { [ Menu ] };              // Legacy KEY_MENU bridge
 
-    // Remove stock Meta/Level5 assignments, then attach Nova's physical
-    // transports to their intended real modifier bits.
+    // ---------------------------------------------------------------------
+    // Always-numeric keypad
+
+    replace key <NMLK> { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ NoSymbol ] };
+
+    replace key <KP7>  { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_7 ] };
+    replace key <KP8>  { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_8 ] };
+    replace key <KP9>  { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_9 ] };
+    replace key <KP4>  { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_4 ] };
+    replace key <KP5>  { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_5 ] };
+    replace key <KP6>  { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_6 ] };
+    replace key <KP1>  { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_1 ] };
+    replace key <KP2>  { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_2 ] };
+    replace key <KP3>  { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_3 ] };
+    replace key <KP0>  { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_0 ] };
+    replace key <KPDL> { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_Decimal ] };
+    replace key <KPPT> { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_Decimal ] };
+    replace key <KPEN> { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_Enter ] };
+    replace key <KPEQ> { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_Equal ] };
+    replace key <KPDV> { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_Divide ] };
+    replace key <KPMU> { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_Multiply ] };
+    replace key <KPSU> { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_Subtract ] };
+    replace key <KPAD> { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_Add ] };
+
+    // Remove inherited Meta, Level5, and NumLock assignments, then attach
+    // Nova's physical transports to their intended real modifier bits.
     modifier_map None { Meta_L, Meta_R };
     modifier_map None { <META> };
     modifier_map None { <LVL5> };
+    modifier_map None { Num_Lock };
     modifier_map Mod2 { <I692> };
-    modifier_map Mod3 { <COMP>, <I690> };
+    modifier_map Mod3 { <COMP> };
     modifier_map Mod5 { <I688> };
 
     // Hyper intentionally remains a keysym-only userland command namespace.

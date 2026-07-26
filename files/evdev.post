@@ -1,2 +1,0 @@
-! option = symbols
-  nova:transports = +us-nova(transports):all
