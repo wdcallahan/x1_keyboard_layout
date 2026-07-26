@@ -1,8 +1,8 @@
 # ADR-0004: Populate B as the first eight-level Level5 canary
 
-- **Version:** 1.0.0
+- **Version:** 1.1.0
 - **Date:** 2026-07-26
-- **Status:** Accepted for deployment
+- **Status:** Offline proof accepted; deployment pending
 - **Behavior label:** `nova-level5-b-canary-2026-07-26`
 - **Depends on:** ADR-0003 / `nova-single-group-keypad-2026-07-26`
 - **Validation runbook:** `docs/runbooks/validate-level5-b-canary.md`
@@ -95,9 +95,21 @@ the standard `complete` types, compatibility, and evdev keycodes. Programmatic
 state resolution produced all eight approved symbols in order and verified every
 Caps Lock case listed above.
 
-MACE still needs the repository runbook's independent `xkbcli` proof with its
-installed libxkbcommon 1.13.1, followed by deployment and a physical-key
-acceptance test.
+### MACE offline proof receipt
+
+On 2026-07-26, MACE fast-forwarded from `df878c0` to `2448dfe` and ran the
+repository proof with its installed xkbcli/libxkbcommon 1.13.1. The compiled
+keymap established all of the following:
+
+- `<AB05>` uses `EIGHT_LEVEL_SEMIALPHABETIC`;
+- its symbols are exactly `b B β α 🐇 🐰 🥬 🥕`;
+- `<COMP>`, `<I688>`, and `<I692>` retain Meta/Mod3, LevelThree/Mod5, and
+  LevelFive/Mod2 respectively;
+- the map contains no Group2-or-higher symbols.
+
+The command concluded `PASS: Level5 B candidate compiled in one group`. The
+candidate is cleared for managed deployment. Ansible deployment, one deliberate
+session reload, and live physical-key acceptance remain pending.
 
 ## Consequences
 
