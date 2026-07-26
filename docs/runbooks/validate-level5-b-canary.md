@@ -1,6 +1,6 @@
 # Runbook: Validate the Level5 B canary
 
-- **Version:** 1.1.0
+- **Version:** 1.2.0
 - **Date:** 2026-07-26
 - **Behavior label:** `nova-level5-b-canary-2026-07-26`
 - **Decision:** `docs/decisions/0004-level5-b-canary.md`
@@ -79,13 +79,15 @@ Run the managed installer, compare both installed files, then prove
 idempotence:
 
 ```bash
-ansible-playbook install_layout.yml && cmp files/us-nova ~/.config/xkb/symbols/us-nova && cmp files/evdev ~/.config/xkb/rules/evdev && test "$(gsettings get org.gnome.desktop.peripherals.keyboard remember-numlock-state)" = false && test "$(gsettings get org.gnome.desktop.peripherals.keyboard numlock-state)" = false && ansible-playbook install_layout.yml
+ansible-playbook install_layout.yml && cmp files/us-nova ~/.config/xkb/symbols/us-nova && cmp files/evdev ~/.config/xkb/rules/evdev && cmp files/gnome-shell/extensions/nova-level5-sentinel@wdcallahan/extension.js ~/.local/share/gnome-shell/extensions/nova-level5-sentinel@wdcallahan/extension.js && cmp files/gnome-shell/extensions/nova-level5-sentinel@wdcallahan/metadata.json ~/.local/share/gnome-shell/extensions/nova-level5-sentinel@wdcallahan/metadata.json && test "$(gsettings get org.gnome.desktop.peripherals.keyboard remember-numlock-state)" = false && test "$(gsettings get org.gnome.desktop.peripherals.keyboard numlock-state)" = false && ansible-playbook install_layout.yml
 ```
 
 The corrective first run may change `remember-numlock-state` and
-`numlock-state` from `true` to `false`. The second run must report zero
-changes. Both byte comparisons and both boolean assertions are silent on
-success.
+`numlock-state` from `true` to `false` and install the staged sentinel
+files. The second run must report zero changes. All four byte comparisons and
+both boolean assertions are silent on success. The playbook does not yet enable
+the extension; follow `docs/designs/level5-mod2-sentinel.md` for its explicit
+fault/healthy proof.
 
 ## Reload boundary
 
