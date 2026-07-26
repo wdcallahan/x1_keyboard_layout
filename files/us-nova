@@ -1,5 +1,5 @@
 // Nova custom 4-level layout for Lemokey X1
-// Transport profile: xkb-menu-meta-transport-v2.6 (2026-07-25)
+// Transport profile: xkb-menu-meta-transport-v2.7 (2026-07-25)
 // Decision record: docs/decisions/0002-separate-menu-meta-compose-transports.md
 // Based on master reference table + hardware remap (Caps/RAlt/Fn/Menu/RCtrl→F21–F24)
 // Drop this into an XKB symbols file (e.g. /etc/X11/xkb/symbols/nova)
@@ -28,21 +28,21 @@ xkb_symbols "base" {
     // --- Menu and Meta transports ---
     // KC_APP arrives as evdev 127 / <COMP>.
     // KC_MENU (USB HID usage 0x76) arrives as evdev 130 / <PROP>.
-    // Meta must exist in both groups because kitty's Wayland modifier scanner
-    // starts from the initial group. Menu has its own dedicated <PROP> path.
+    // GNOME must load us-nova as the sole input source so this component is
+    // Group1 and modifier scanners encounter Meta_R in their initial state.
     replace key <COMP> {
-        [ Meta_R ],
         [ Meta_R ],
         virtualModifiers = Meta
     };
-    key <PROP> { [ Menu ] };
+    replace key <PROP> { [ Menu ] };
 
     // Retain the former KEY_MENU bridge until post-migration cleanup.
     key <I147> { [ Menu ] };
 
-    // Remove inherited modifier assignments using the exact original target,
+    // Remove inherited modifier assignments using the exact original targets,
     // then bind the dedicated transports to their intended real bits.
     modifier_map None { Meta_R };
+    modifier_map None { <META> };
     modifier_map None { <LVL5> };
     modifier_map Mod2 { <I692> };
     modifier_map Mod3 { <COMP>, <I690> };
@@ -94,8 +94,7 @@ xkb_symbols "base" {
     key <AC03> { [ d,          D,                 U00F0,        U00D0        ] }; // ð, Ð
     key <AC04> { [ f,          F,                 U2109,        U2103        ] }; // ℉, ℃
     key <AC05> { [ g,          G,                 U011D,        U011C        ] }; // ĝ, Ĝ
-    key <AC06> { [ h,          H,                 U0125,        U0124        ] }; // ĥ, Ĥ
-    key <AC07> { [ j,          J,                 U0135,        U0134        ] }; // ĵ, Ĵ
+    key <AC06> { [ h,          H,                 U0125,        U0124        ] }; // ĥ, Ĥ\n    key <AC07> { [ j,          J,                 U0135,        U0134        ] }; // ĵ, Ĵ
     key <AC08> { [ k,          K,                 U021D,        U021C        ] }; // ȝ, Ȝ
     key <AC09> { [ l,          L,                 U03BB                      ] }; // λ
     key <AC10> { [ semicolon,  colon,             U2236,        U2237        ] }; // ∶, ∷
