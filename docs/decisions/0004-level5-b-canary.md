@@ -1,8 +1,8 @@
 # ADR-0004: Populate B as the first eight-level Level5 canary
 
-- **Version:** 1.2.0
+- **Version:** 1.3.0
 - **Date:** 2026-07-26
-- **Status:** Live canary rejected; GNOME Mod2 correction pending
+- **Status:** Corrective policy and sentinel proof pending
 - **Behavior label:** `nova-level5-b-canary-2026-07-26`
 - **Depends on:** ADR-0003 / `nova-single-group-keypad-2026-07-26`
 - **Validation runbook:** `docs/runbooks/validate-level5-b-canary.md`
@@ -157,6 +157,15 @@ numlock-state          = false
 
 Repository commit `4264de0` adds that policy to `install_layout.yml`. A fresh
 session and the original physical acceptance suite remain required.
+
+Prevention alone is not treated as proof against every future producer. A
+read-only GNOME Shell sentinel is staged under
+`files/gnome-shell/extensions/nova-level5-sentinel@wdcallahan`. It distinguishes
+depressed Mod2 from latched/locked Mod2, watches the two policy booleans, and
+raises a persistent rabbit alarm without changing modifier state. Its fault and
+healthy-session tests are defined in
+`docs/designs/level5-mod2-sentinel.md`; automatic enablement remains pending
+those MACE proofs.
 
 ## Consequences
 
