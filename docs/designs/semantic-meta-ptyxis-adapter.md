@@ -1,8 +1,8 @@
 # Design: semantic Meta adapter for Ptyxis and tmux
 
-- **Version:** 0.3.0
+- **Version:** 1.0.0
 - **Date:** 2026-07-26
-- **Status:** Prototype awaiting live MACE acceptance
+- **Status:** Accepted on MACE
 - **Transport decision:** ADR-0003
 
 ## Purpose
@@ -13,11 +13,20 @@ Nova exposes a real semantic Meta modifier:
 Any/Meta hold -> KC_APP -> <COMP> -> Meta_R -> virtual Meta -> real Mod3
 ```
 
-Firmware, XKB, and the Wayland protocol preserve that state. Ptyxis/VTE and
-kitty both demonstrated a consumer gap: the terminal recognized the modifier
-key itself but encoded the following key as unmodified input. Installing or
-implementing a richer terminal wire protocol cannot recover a modifier that
-the terminal frontend has already discarded.
+Firmware, XKB, and the Wayland protocol preserve that state. Live MACE
+comparisons isolate the next consumer boundary:
+
+| Consumer | Meta+D | Alt+D | Interpretation |
+| --- | --- | --- | --- |
+| XTerm 406 | `ESC d` | plain `d` | Xterm recognizes semantic Meta on Mod3 and serializes it through the legacy terminal Meta channel. |
+| Ptyxis 50.1 / VTE 0.84.0 before the adapter | plain `d` | `ESC d` | VTE assigns the legacy terminal Meta channel to Alt and discards Mod3 for ordinary text input. |
+| kitty 0.47.1 extended-key trace | Meta key event, then unmodified F | not part of this receipt | The wire protocol can represent Meta, but the following ordinary-key event did not retain it. |
+
+This proves that the modifier is not lost in firmware, XKB, Wayland, or every
+terminal. Xterm is a native semantic-Meta consumer. VTE is the daily-terminal
+consumer gap. Mapping Meta to `ESC` inside Ptyxis would collide with Alt, so
+the adapter must remain command-specific rather than pretending to be a
+general Meta transport.
 
 The first useful consumer is therefore deliberately narrow:
 
@@ -111,7 +120,7 @@ the client. Outside tmux it has the ordinary terminal meanings of Control+B
 followed by D. This limitation must be included in live acceptance; expanding
 the consumer requires a separate design decision.
 
-## Prototype iteration receipt
+## Implementation iteration receipt
 
 Version 1 loaded successfully after reboot but Meta+D printed a literal `d`.
 Window Calls then reported the focused Ptyxis window as:
@@ -151,10 +160,35 @@ After a fresh GNOME session:
 6. Meta+D in a non-Ptyxis application is not consumed.
 7. Disabling the extension restores the prior behavior immediately.
 
-The prototype remains unaccepted until MACE passes those checks.
+## Live MACE acceptance receipt
+
+MACE passed the contract on 2026-07-26 after a fresh GNOME session:
+
+- extension version 3 reported `Enabled: Yes` and `State: ACTIVE`;
+- Meta+D detached the active tmux client without inserting D;
+- reattaching returned to the same tmux session with an unsubmitted command
+  still intact;
+- holding the chord caused one detach, not an auto-repeat burst;
+- outside Ptyxis, `wev` still reported `Meta_R`, depressed Mod3, and the
+  ordinary D event, proving that the scoped grab did not consume the chord;
+- `showkey -a` in Ptyxis reported Alt+D as bytes `27 100` (`ESC d`) and
+  adapted Meta+D as bytes `2 100` (Control+B, D);
+- `showkey -a` in XTerm 406 reported native Meta+D as `27 100` and Alt+D
+  as plain `100`;
+- Bash Readline in xterm consumed Meta+D as its native `M-d` word deletion;
+- the managed extension survived reboot, and the installation playbook had
+  already reached a zero-change run.
+
+The adapter is accepted for the exact Ptyxis/tmux detach consumer. It is not a
+general terminal Meta encoder, and the documented behavior outside tmux
+remains part of its scope.
 
 ## Implementation references
 
+- Xterm Meta-key handling:
+  <https://invisible-island.net/xterm/xterm-meta-key.html>
+- Xterm keyboard control sequences:
+  <https://invisible-island.net/xterm/ctlseqs/ctlseqs.html>
 - Mutter 50.3 event routing:
   <https://github.com/GNOME/mutter/blob/50.3/src/core/events.c>
 - Mutter 50.3 external accelerator handling:
