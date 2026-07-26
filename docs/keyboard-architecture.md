@@ -160,8 +160,9 @@ Current active special mapping:
 | `PB_12` | `XF86Macro12` / `<I675>` | Compose (`Multi_key`). |
 | `PB_25` | `XF86Macro25` / `<I688>` | AltGr / Level3 (`ISO_Level3_Shift`). |
 | `PB_26` | `XF86Macro26` / `<I689>` | Any key GNOME shortcut trigger. |
-| `PB_27` | `XF86Macro27` / `<I690>` | Meta (`Meta_R`, Mod3). |
-| `PB_28` | `XF86Macro28` / `<I691>` | Future Whisper/PTT trigger. |
+| `KC_APP` | `<COMP>` | Meta (`Meta_R`, virtual Meta, real Mod3). |
+| `KC_MENU` | `<PROP>` | Menu / application context menu. |
+| `PB_28` | `XF86Macro28` / `<I691>` | Whisper/PTT press-and-release trigger. |
 | `PB_29` | `XF86Macro29` / `<I692>` | Level5 shift (`ISO_Level5_Shift`, Mod2). |
 
 The `I###` names are XKB key names assigned to these extra keys. They are not physical matrix positions, Linux evdev codes, or QMK names. They are the names XKB uses inside the compiled keymap.
@@ -174,9 +175,9 @@ The current full-size prototype places the special right-side cluster like this,
 
 | Position | Firmware behavior | Host meaning |
 | --- | --- | --- |
-| First key after Space | `PB_28` | Future Whisper/PTT trigger. |
-| Fn/Menu position | tap `KC_APP`, hold `KC_RCTL` | Menu / Right Control. |
-| Menu-ish position | tap `PB_26`, hold `PB_27` | Any / Meta. |
+| First key after Space | `PB_28` | Whisper/PTT trigger. |
+| Fn/Menu position | tap `KC_MENU`, hold `KC_RCTL` | Menu / Right Control. |
+| Menu-ish position | tap `PB_26`, hold `KC_APP` | Any / Meta. |
 | Right Control position | tap `PB_12`, hold `PB_25` | Compose / AltGr. |
 
 The reason for this arrangement is ergonomic rather than aesthetic.
@@ -293,13 +294,13 @@ The `hyperkeyd` project currently demonstrates the command-dispatch idea, but it
 
 Meta should be treated as a real, intentional command modifier.
 
-This is useful for terminal programs and keyboard-heavy tools such as Emacs, tmux, editors, and shells.
+The current transport is complete: the Any/Meta hold emits `KC_APP`, Linux/XKB names it `<COMP>`, and the Nova symbols file turns it into `Meta_R` with virtual Meta on real Mod3. Live Wayland inspection verified that state without conflating it with Alt or Super.
 
-Meta+D is cleaner than multi-key prefix sequences such as Control+B then D. Meta creates a command namespace without overloading Control for everything.
+Transport success and application consumption are separate. Ptyxis/VTE receiving Meta+F as plain `f` showed that an ordinary terminal does not automatically encode every desktop modifier into bytes. The [kitty keyboard protocol](https://sw.kovidgoyal.net/kitty/keyboard-protocol/) can distinguish Alt, Super, Hyper, and semantic Meta, while [tmux's documented command-key model](https://github.com/tmux/tmux/wiki/Modifier-Keys) still centers on Control, historical Meta (usually Alt), and Shift.
 
-Super remains available for desktop/window-manager behavior. Meta remains available for application and terminal command behavior.
+Do not globally alias semantic Meta to Alt merely to satisfy a legacy terminal boundary. A consumer should either understand semantic Meta directly or use a deliberately narrow application/terminal adapter for the chosen chords.
 
-This keeps desktop control and application command space separate.
+Meta+D remains a useful design goal because it is cleaner than multi-key prefix sequences such as Control+B then D. Super remains available for desktop/window-manager behavior; Meta remains the application command namespace. The first consumer and its boundary translation require a separate acceptance decision.
 
 ---
 
@@ -355,34 +356,36 @@ In this layout, Level3 and Level4 are curated symbol vocabulary, not random Unic
 2. Symbols that can be composed but are common enough to deserve a direct slot.
 3. Symbols that would be used more often if they were convenient.
 
-Example acceptance test:
+A compact Level3 acceptance test is:
 
-`1!‼⚠1!`
+`1!‼⚠`
 
-This demonstrates levels 1 through 6 on the `1` key. Levels 5 and 6 currently fall back to levels 1 and 2 when no fifth/sixth-level symbols are defined.
+The first deliberate Level5 acceptance surface is the B key described below. Keys without an explicit eight-level type remain on their existing vocabulary.
 
 ---
 
-## 18. Level5 as future expansion
+## 18. Level5 and the first eight-level canary
 
-Level5 is reserved as a future text-symbol dimension.
+Level5 is a text-symbol dimension, not a command modifier. Its transport is `PB_29` → `<I692>` → `ISO_Level5_Shift`, assigned to real Mod2 and virtual LevelFive.
 
-It is not expected to do much unless the keymap defines symbols and types that use it.
+The B key is the first deliberately populated eight-level key:
 
-| Key state | Example role |
+| Key state | B result |
 | --- | --- |
-| A | base symbol |
-| Shift+A | shifted base symbol |
-| AltGr+A | third-level symbol |
-| Shift+AltGr+A | fourth-level symbol |
-| Level5+A | fifth-level symbol |
-| Shift+Level5+A | sixth-level symbol |
+| B | `b` |
+| Shift+B | `B` |
+| Level3+B | `β` |
+| Shift+Level3+B | `α` |
+| Level5+B | `🐇` |
+| Shift+Level5+B | `🐰` |
+| Level3+Level5+B | `🥬` |
+| Shift+Level3+Level5+B | `🥕` |
 
-Level5 is mapped to `ISO_Level5_Shift` on `PB_29`, which is seen by XKB as `<I692>` and assigned to Mod2.
+`EIGHT_LEVEL_SEMIALPHABETIC` preserves the key's existing alphabetic and Greek behavior while exposing the approved rabbit-and-vegetable canary. ADR-0004 records the exact Caps Lock behavior and the validation boundary.
 
-Level5 is not a command modifier. It is another text-symbol selector.
+This one key proves the selector, type, Unicode, and modifier combinations without authorizing a bulk expansion. Other keys remain at their existing number of levels until individual symbols earn direct slots.
 
-One current use case is the narrow no-break space on Space Level3. It is used for units and attached expressions such as `50 kg`, `6 o'clock`, and `Shift 6`, where the parts should not wrap apart but a full non-breaking space is visually too wide. Fourth-level Space provides a discretionary soft hyphen for controlling line breaks when needed.
+Space remains a Level3/Level4 example: narrow no-break space supports attached expressions such as `50 kg`, `6 o'clock`, and `Shift 6`, while soft hyphen controls discretionary line breaks.
 
 ---
 
@@ -477,7 +480,7 @@ Current tap-hold pairings:
 | Compose/AltGr key | `PB_12` → Compose / `Multi_key` | `PB_25` → AltGr / `ISO_Level3_Shift` |
 | Fn/Menu key | Menu / Application | Right Control |
 | Insert key | Insert | `PB_29` → Level5 shift |
-| Any/Meta key | `PB_26` → Any trigger | `PB_27` → Meta |
+| Any/Meta key | `PB_26` → Any trigger | `KC_APP` → `<COMP>` → Meta |
 
 Right Shift is no longer tap-hold. It is plain Right Shift. CapsLock is handled by both Shifts together through XKB/GNOME options.
 
@@ -502,6 +505,12 @@ That way host-side listeners can bind to clean events such as `KEY_MACRO28` inst
 The current Any key implementation lives in the `press-the-any-key` project. It binds GNOME to `XF86Macro26` and injects random alphanumeric characters through the Wayland-safe `ydotool` path.
 
 The Whisper/PTT trigger is planned but separate. It should not be conflated with the old STT binding.
+
+The intended local pipeline is press PB28 to begin a PipeWire capture, release PB28 to stop it, transcribe the resulting 16-bit mono WAV with a local model, and inject the finished text at the cursor through the established Wayland-safe input path. The listener should use the direct `KEY_MACRO28` press/release identity and should not grab or reinterpret ordinary typing keys.
+
+Microphone selection must be configurable by stable PipeWire node name so a dedicated dictation microphone can coexist with Zoom or BigBlueButton. The future service should expose at least idle, recording, transcribing, and error states; the exact persistent indicator belongs to that project.
+
+`whisper.cpp` is the leading first benchmark because it provides local Linux inference, official CPU and CUDA container paths, and a file-oriented CLI that fits press/release recording. `faster-whisper` remains a comparison candidate, but its current GPU path requires CUDA 12 and cuDNN 9 rather than the older CUDA 11.8 container previously used on MACE. Engine choice remains a benchmark decision, not a keyboard transport decision.
 
 ---
 
@@ -530,7 +539,7 @@ For fixed special keys, legends should match the stable intended behavior:
 | Compose / AltGr | Tap Compose, hold AltGr. |
 | Any / Meta | Tap Any trigger, hold Meta. |
 | Menu / Control | Tap Menu/Application, hold Right Control. |
-| Whisper | Future speech-to-text push-to-talk trigger. |
+| Whisper | Local speech-to-text push-to-talk trigger. |
 | Mouse | Mouse layer toggle on NumLock position. |
 
 For relegendable keys, the printed legend may change with software bindings, but the firmware identity should remain stable.
@@ -569,7 +578,10 @@ Acceptance checks:
 | Shift+Level3+1 | `⚠` |
 | Any key repeated | Random alphanumeric output from Any program. |
 | Meta hold + key | `Meta_R` / Mod3 visible in `xkbcli`. |
-| Level5 hold + key | `ISO_Level5_Shift` / LevelFive visible in `xkbcli`. |
+| Level5 hold + B | `🐇`. |
+| Shift+Level5 hold + B | `🐰`. |
+| Level3+Level5 hold + B | `🥬`. |
+| Shift+Level3+Level5 hold + B | `🥕`. |
 | Both Shifts | Toggle CapsLock. |
 | Right Shift alone | Plain Shift. |
 
@@ -626,7 +638,7 @@ If rebuilding this setup later, preserve these ideas first:
 7. Hyper is a trigger, not necessarily a real modifier.
 8. CapsLock exists only as an intentional both-Shift action.
 9. Level3/Level4 are curated vocabulary, not random symbols.
-10. Level5 exists for future expansion.
+10. Level5 is a curated text dimension whose first eight-level canary is B.
 11. Physical placement is decided by real hand use, especially uncomfortable chords, not by abstract symmetry alone.
 
 The keyboard should disappear during teaching and writing. If the layout makes a common chord noticeable in a bad way, the layout is wrong.
