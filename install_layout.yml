@@ -5,6 +5,11 @@
   vars:
     nova_input_sources: "[('xkb', 'us-nova')]"
     nova_xkb_options: "['shift:both_capslock']"
+    nova_numlock_compatibility:
+      - key: remember-numlock-state
+        value: "false"
+      - key: numlock-state
+        value: "false"
 
   tasks:
     - name: Ensure user XKB directories exist
@@ -32,6 +37,49 @@
       ansible.builtin.file:
         path: "{{ ansible_facts.env.HOME }}/.config/xkb/rules/evdev.post"
         state: absent
+
+    # Mutter restores remembered NumLock by locking raw Mod2. Nova uses Mod2
+    # for LevelFive, so both GNOME settings must stay false.
+    - name: Read GNOME NumLock compatibility settings
+      ansible.builtin.command:
+        argv:
+          - gsettings
+          - get
+          - org.gnome.desktop.peripherals.keyboard
+          - "{{ item.key }}"
+      loop: "{{ nova_numlock_compatibility }}"
+      loop_control:
+        label: "{{ item.key }}"
+      register: current_numlock_compatibility
+      changed_when: false
+
+    - name: Disable GNOME NumLock restoration for Nova Level5
+      ansible.builtin.command:
+        argv:
+          - gsettings
+          - set
+          - org.gnome.desktop.peripherals.keyboard
+          - "{{ item.item.key }}"
+          - "{{ item.item.value }}"
+      loop: "{{ current_numlock_compatibility.results }}"
+      loop_control:
+        label: "{{ item.item.key }}"
+      when: item.stdout | trim != item.item.value
+      changed_when: true
+
+    - name: Verify GNOME NumLock cannot pre-lock Nova Level5
+      ansible.builtin.command:
+        argv:
+          - gsettings
+          - get
+          - org.gnome.desktop.peripherals.keyboard
+          - "{{ item.key }}"
+      loop: "{{ nova_numlock_compatibility }}"
+      loop_control:
+        label: "{{ item.key }}"
+      register: verified_numlock_compatibility
+      changed_when: false
+      failed_when: verified_numlock_compatibility.stdout | trim != item.value
 
     - name: Read current GNOME input sources
       ansible.builtin.command:
