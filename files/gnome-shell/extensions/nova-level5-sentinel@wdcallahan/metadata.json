@@ -1,0 +1,9 @@
+{
+  "uuid": "nova-level5-sentinel@wdcallahan",
+  "name": "Nova Level5 Sentinel",
+  "description": "Alerts when Mod2 is latched or locked outside Nova's physical Level5 hold.",
+  "shell-version": [
+    "50"
+  ],
+  "version": 1
+}
