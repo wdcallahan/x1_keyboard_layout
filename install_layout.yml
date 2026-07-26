@@ -10,6 +10,10 @@
         value: "false"
       - key: numlock-state
         value: "false"
+    nova_level5_sentinel_uuid: nova-level5-sentinel@wdcallahan
+    nova_level5_sentinel_files:
+      - extension.js
+      - metadata.json
 
   tasks:
     - name: Ensure user XKB directories exist
@@ -20,6 +24,7 @@
       loop:
         - "{{ ansible_facts.env.HOME }}/.config/xkb/symbols"
         - "{{ ansible_facts.env.HOME }}/.config/xkb/rules"
+        - "{{ ansible_facts.env.HOME }}/.local/share/gnome-shell/extensions/{{ nova_level5_sentinel_uuid }}"
 
     - name: Install Nova symbols file
       ansible.builtin.copy:
@@ -32,6 +37,15 @@
         src: files/evdev
         dest: "{{ ansible_facts.env.HOME }}/.config/xkb/rules/evdev"
         mode: "0644"
+
+    # Install the read-only prototype, but leave enablement explicit until MACE
+    # proves both its alarm and healthy-session behavior.
+    - name: Install Nova Level5 sentinel prototype
+      ansible.builtin.copy:
+        src: "files/gnome-shell/extensions/{{ nova_level5_sentinel_uuid }}/{{ item }}"
+        dest: "{{ ansible_facts.env.HOME }}/.local/share/gnome-shell/extensions/{{ nova_level5_sentinel_uuid }}/{{ item }}"
+        mode: "0644"
+      loop: "{{ nova_level5_sentinel_files }}"
 
     - name: Remove obsolete Nova post-rules file
       ansible.builtin.file:
