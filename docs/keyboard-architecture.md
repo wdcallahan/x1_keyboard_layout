@@ -403,7 +403,7 @@ The keypad should always remain numeric. This preserves muscle memory and avoids
 | --- | --- |
 | NumLock position | Toggle mouse layer on/off. |
 | Keypad numbers | Always send keypad numbers. |
-| NumLock LED | Indicate mouse-layer state, if firmware can control it. |
+| NumLock LED | Off on Base, solid on Mouse, blinking on Scroll. |
 
 This treats the NumLock position as a useful mode toggle while rejecting the old behavior that turns a numeric keypad into a duplicate navigation cluster.
 
@@ -442,15 +442,20 @@ This keeps mouse movement and scroll movement spatially related while avoiding a
 
 ## 21. NumLock LED as mouse-layer indicator
 
-If the keyboard firmware can control the NumLock LED directly, the LED should indicate mouse-layer state instead of host NumLock state.
+The Lemokey X2 default keymap controls the A4 NumLock lamp as a firmware-layer
+indicator instead of mirroring host NumLock state.
 
 | State | NumLock LED |
 | --- | --- |
 | Normal layer | Off. |
 | Mouse layer | Solid on. |
-| Scroll layer | Blinking, if practical. |
+| Scroll layer | Blinking at 250 ms intervals. |
 
-This depends on keyboard hardware and firmware support. Some keyboards expose lock LEDs as directly controllable outputs. Some expose them through an LED driver or I/O expander. Some may only follow host lock state unless firmware is modified.
+The implementation sends no synthetic NumLock key events. It preserves the
+host-driven CapsLock and ScrollLock lamps, turns all lock indicators off during
+suspend, and restores the layer indication after wake. The source change is
+recorded in `lemokey-x2-qmk` commit `daa4650f55df`; it is not live until that
+firmware has been deliberately built, flashed, and validated on MACE.
 
 ---
 

@@ -1,6 +1,6 @@
 # ADR-0003: Use one Nova group and an always-numeric keypad
 
-- **Version:** 1.2.0
+- **Version:** 1.3.0
 - **Date:** 2026-07-26
 - **Status:** Accepted for deployment
 - **Behavior label:** `nova-single-group-keypad-2026-07-26`
@@ -150,12 +150,16 @@ After deployment and one deliberate GNOME reload:
 
 ## Firmware follow-up
 
-After the host map is accepted, one deliberate firmware flash remains:
+The source-side firmware follow-up is complete in
+`lemokey-x2-qmk` commit `daa4650f55df`:
 
-1. remove the watchdog that repeatedly forces host NumLock on;
-2. drive the A4 NumLock lamp from the firmware `MOUSE` layer state.
+1. the watchdog that repeatedly forced host NumLock on is removed;
+2. the A4 NumLock lamp is off on `BASE`, solid on `MOUSE`, and blinking on
+   `SCROLL`;
+3. suspend turns the repurposed lamp off and wake restores the layer indication.
 
-That firmware work is separate from this host-side decision.
+One deliberate QMK build, flash, and live event validation on MACE remain. That
+deployment is separate from this host-side decision.
 
 ## Rollback
 
