@@ -1,6 +1,6 @@
 # Design: semantic Meta adapter for Ptyxis and tmux
 
-- **Version:** 0.2.0
+- **Version:** 0.3.0
 - **Date:** 2026-07-26
 - **Status:** Prototype awaiting live MACE acceptance
 - **Transport decision:** ADR-0003
@@ -43,14 +43,18 @@ protocol encoder.
 
 ## Boundary
 
-The adapter is a GNOME Shell extension because Shell sees real Mod3 before the
-terminal boundary. It acts only when:
+The adapter is a GNOME Shell extension because Mutter sees real Mod3 before
+the terminal boundary. It owns one compositor accelerator:
 
-- the focused window identifies as `org.gnome.Ptyxis` through its Shell
-  application ID, GTK application ID, WM class, or WM class instance;
-- the event is D or d;
-- the explicit `Meta_R` key-down event has been observed and its matching
-  release has not yet arrived.
+```text
+<Mod3>d
+```
+
+The accelerator is allowed only while the focused window identifies as
+`org.gnome.Ptyxis` through its Shell application ID, GTK application ID, WM
+class, or WM class instance. Mutter consumes the exact chord before Wayland
+delivery. Outside Ptyxis, Shell marks the accelerator disallowed, so Mutter
+treats it as unhandled and preserves the normal application input path.
 
 Plain D, Alt+D, Super+D, Level3+D, Level5+D, and Meta+D outside Ptyxis continue
 through the normal input path.
@@ -59,21 +63,24 @@ through the normal input path.
 
 | State | Event | Action | Next state |
 | --- | --- | --- | --- |
-| Idle | Exact Meta+D press in Ptyxis | Consume D; queue detach | Swallowing D |
-| Swallowing D | D repeat | Consume repeat | Swallowing D |
-| Swallowing D | D release | Consume release | Waiting for Meta release |
-| Waiting | Meta still depressed | Do nothing | Waiting |
-| Waiting | Meta released | Inject `Ctrl+B`, then `D` with `ydotool` | Idle |
+| Ptyxis unfocused | Focus enters Ptyxis | Allow compositor accelerator | Armed |
+| Armed | Exact Meta+D press | Mutter consumes chord; queue detach | Waiting |
+| Waiting | D repeat | Mutter consumes and ignores repeat | Waiting |
+| Waiting | D or Meta still depressed | Do nothing | Waiting |
+| Waiting | D and Meta released | Inject `Ctrl+B`, then `D` with `ydotool` | Armed |
+| Waiting | Release wait reaches 15 seconds | Cancel without injection; notify once | Faulted |
+| Any | Focus leaves Ptyxis | Disallow accelerator; cancel pending action | Ptyxis unfocused |
 | Any | Dependency or subprocess failure | Notify once; preserve fault in journal | Faulted |
 
 The adapter must wait for physical Meta release before injection. Injecting D
 while Mod3 remained depressed would make the extension recognize its own
 synthetic D as another Meta+D chord and could recurse indefinitely.
 
-Tracking the concrete `Meta_R` press and release is intentional. The firmware
-and Wayland proofs already establish that identity, while the project exists
-precisely because later consumers inconsistently preserve the corresponding
-modifier bit.
+Mutter emits separate activation and deactivation signals for the grabbed D
+key. The extension combines that lifecycle with the compositor's current
+Mod3 mask from `global.get_pointer()`, the same modifier-state mechanism GNOME
+Shell uses for its own switcher release handling. Injection begins only after
+both are clear.
 
 ## Injection
 
@@ -120,11 +127,23 @@ surfaces and records the chosen identity in the journal when it claims the
 chord. It also follows the explicit `Meta_R` key lifecycle rather than making
 the action depend solely on a toolkit modifier mask.
 
+Version 2 also loaded as `ACTIVE`, but Meta+D still printed `d`. Inspection of
+Mutter 50.3 established the actual boundary error: normal key events for a
+focused Wayland client are handled by Mutter's keybinding layer and then
+routed to the client; they do not traverse GNOME Shell's Clutter stage.
+Consequently, a `global.stage` `captured-event` listener cannot implement this
+consumer while Ptyxis owns keyboard focus.
+
+Version 3 replaces the passive stage listener with Mutter's external
+accelerator API. It grabs exact `<Mod3>d`, uses Shell's keybinding filter to
+allow that grab only while Ptyxis is focused, ignores auto-repeat, receives a
+release callback, and polls the real Mod3 mask before injection.
+
 ## Acceptance contract
 
 After a fresh GNOME session:
 
-1. Extension version 2 reports `Enabled: Yes` and `State: ACTIVE`.
+1. Extension version 3 reports `Enabled: Yes` and `State: ACTIVE`.
 2. In tmux under Ptyxis, Meta+D detaches the focused client.
 3. No literal D appears before detachment.
 4. D auto-repeat does not trigger repeated detach attempts.
@@ -133,3 +152,12 @@ After a fresh GNOME session:
 7. Disabling the extension restores the prior behavior immediately.
 
 The prototype remains unaccepted until MACE passes those checks.
+
+## Implementation references
+
+- Mutter 50.3 event routing:
+  <https://github.com/GNOME/mutter/blob/50.3/src/core/events.c>
+- Mutter 50.3 external accelerator handling:
+  <https://github.com/GNOME/mutter/blob/50.3/src/core/keybindings.c>
+- GNOME Shell 50.3 keybinding-mode filter:
+  <https://github.com/GNOME/gnome-shell/blob/50.3/js/ui/windowManager.js>

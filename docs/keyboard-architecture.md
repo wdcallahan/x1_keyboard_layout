@@ -311,11 +311,17 @@ the ordinary-key event crossed the terminal byte boundary.
 Do not globally alias semantic Meta to Alt merely to satisfy a legacy terminal boundary. A consumer should either understand semantic Meta directly or use a deliberately narrow application/terminal adapter for the chosen chords.
 
 The first selected consumer is a GNOME Shell prototype for Meta+D under
-Ptyxis. Shell tracks the explicit `Meta_R` press/release lifecycle before the
-terminal boundary, consumes only the corresponding D chord, waits until the
-physical keys are released, and uses the established `ydotool` path to emit
-tmux's existing Control+B, D sequence. Waiting for release prevents the
-synthetic D from recursively becoming another Meta+D while Meta is still down.
+Ptyxis. Mutter claims exact `<Mod3>d` at its compositor keybinding layer before
+Wayland delivery. Shell allows that binding only while Ptyxis is focused. The
+adapter waits until Mutter reports D released and the real Mod3 mask clears,
+then uses the established `ydotool` path to emit tmux's existing Control+B, D
+sequence. Waiting for release prevents the synthetic D from recursively
+becoming another Meta+D while Meta is still down.
+
+An earlier passive `global.stage` event listener was the wrong boundary:
+ordinary keyboard events for a focused Wayland client do not traverse Shell's
+Clutter stage. An extension can be `ACTIVE` while that listener sees none of
+the relevant client-bound keys.
 
 Super remains available for desktop/window-manager behavior; Meta remains the
 application command namespace. The adapter is deliberately not a general
