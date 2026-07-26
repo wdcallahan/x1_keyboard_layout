@@ -94,7 +94,8 @@ xkb_symbols "base" {
     key <AC03> { [ d,          D,                 U00F0,        U00D0        ] }; // ð, Ð
     key <AC04> { [ f,          F,                 U2109,        U2103        ] }; // ℉, ℃
     key <AC05> { [ g,          G,                 U011D,        U011C        ] }; // ĝ, Ĝ
-    key <AC06> { [ h,          H,                 U0125,        U0124        ] }; // ĥ, Ĥ\n    key <AC07> { [ j,          J,                 U0135,        U0134        ] }; // ĵ, Ĵ
+    key <AC06> { [ h,          H,                 U0125,        U0124        ] }; // ĥ, Ĥ
+    key <AC07> { [ j,          J,                 U0135,        U0134        ] }; // ĵ, Ĵ
     key <AC08> { [ k,          K,                 U021D,        U021C        ] }; // ȝ, Ȝ
     key <AC09> { [ l,          L,                 U03BB                      ] }; // λ
     key <AC10> { [ semicolon,  colon,             U2236,        U2237        ] }; // ∶, ∷
