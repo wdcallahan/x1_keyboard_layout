@@ -1,12 +1,15 @@
 # Runbook: Validate Menu/Meta transport v2
 
-- **Version:** 1.1.0
-- **Date:** 2026-07-24
+- **Version:** 1.2.0
+- **Date:** 2026-07-26
+- **Status:** Superseded; historical only
 - **Behavior label:** `xkb-menu-meta-transport-v2.1`
 - **Applies to commit:** `7db85a2c1c42ce2033969f1f4be591d273b6ef45`
 - **Authoritative branch:** `main`
 
 This runbook validates the staged host-side Menu and Meta transport mapping before any QMK firmware change.
+
+> **Do not execute this runbook on the current layout.** ADR-0003 replaced the transitional two-group and PB27 paths with the deployed single-group `KC_APP` / `<COMP>` Meta route. Use `docs/runbooks/validate-single-group-keypad.md` for the current transport assembly.
 
 The destination `~/.config/xkb/symbols/us-nova` is Ansible-managed. Do not edit it directly.
 
