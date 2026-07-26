@@ -1,12 +1,14 @@
 # ADR-0002: Separate Menu, Meta, and Compose transports
 
-- **Version:** 1.2.0
-- **Date:** 2026-07-24
-- **Status:** Accepted for staged host validation
+- **Version:** 1.3.0
+- **Date:** 2026-07-26
+- **Status:** Superseded by ADR-0003
 - **Behavior label:** `xkb-menu-meta-transport-v2.1`
 - **Supersedes:** ADR-0001 / `xkb-meta-transport-v1`
 - **Validation runbook:** `docs/runbooks/validate-menu-meta-transport-v2.md`
 - **Repository owner:** `wdcallahan/x1_keyboard_layout`
+
+> **Historical record:** Do not deploy this two-group transitional design. ADR-0003 replaced it with the accepted single-group layout, removed PB27 / `<I690>`, and completed the live Meta route through `KC_APP` / `<COMP>`.
 
 ## Context
 
