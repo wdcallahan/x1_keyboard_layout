@@ -1,55 +1,15 @@
 // Nova custom 4-level layout for Lemokey X1
-// Transport profile: xkb-menu-meta-transport-v2.7 (2026-07-25)
+// Transport profile: xkb-menu-meta-transport-v2.8 (2026-07-25)
 // Decision record: docs/decisions/0002-separate-menu-meta-compose-transports.md
 // Based on master reference table + hardware remap (Caps/RAlt/Fn/Menu/RCtrl→F21–F24)
 // Drop this into an XKB symbols file (e.g. /etc/X11/xkb/symbols/nova)
 
-partial alphanumeric_keys modifier_keys
+partial alphanumeric_keys
 xkb_symbols "base" {
     include "us"
 
     name[Group1] = "Nova custom 4-level";
 
-    // Expose the dedicated key as semantic Meta for GTK and any terminal
-    // protocol capable of carrying it. VTE's legacy encoder ignores Meta;
-    // do not alias the key to Alt.
-    virtual_modifiers Meta;
-
-    // --- Programmable-button bridge keys from QMK ---
-    // PB11/PB12/PB25/PB27/PB29 arrive as XKB key names
-    // I674/I675/I688/I690/I692.
-
-    key <I674> { [ Hyper_L ] };           // PB11 → Hyper
-    key <I675> { [ Multi_key ] };         // PB12 → Compose
-    key <I688> { [ ISO_Level3_Shift ] };  // PB25 → AltGr / Level3
-    key <I690> { [ Meta_R ] };            // Legacy PB27 Meta bridge
-    key <I692> { [ ISO_Level5_Shift ] };  // PB29 → Level5
-
-    // --- Menu and Meta transports ---
-    // KC_APP arrives as evdev 127 / <COMP>.
-    // KC_MENU (USB HID usage 0x76) arrives as evdev 130 / <PROP>.
-    // GNOME must load us-nova as the sole input source so this component is
-    // Group1 and modifier scanners encounter Meta_R in their initial state.
-    replace key <COMP> {
-        [ Meta_R ],
-        virtualModifiers = Meta
-    };
-    replace key <PROP> { [ Menu ] };
-
-    // Retain the former KEY_MENU bridge until post-migration cleanup.
-    key <I147> { [ Menu ] };
-
-    // Remove inherited modifier assignments using the exact original targets,
-    // then bind the dedicated transports to their intended real bits.
-    modifier_map None { Meta_R };
-    modifier_map None { <META> };
-    modifier_map None { <LVL5> };
-    modifier_map Mod2 { <I692> };
-    modifier_map Mod3 { <COMP>, <I690> };
-    modifier_map Mod5 { ISO_Level3_Shift };
-
-    // Intentionally no modifier_map entry for Hyper_L.
-    // Hyper is a plain keysym used by userland software.
     // ---------------------------------------------------------------------
     // Number row (` 1 2 3 4 5 6 7 8 9 0 - =)
     // L1/L2: standard US. L3/L4: symbols from Nova's table.
@@ -78,12 +38,12 @@ xkb_symbols "base" {
     key <AD04> { [ r,          R,                 U01BF,        U01F7        ] }; // ƿ, Ƿ
     key <AD05> { [ t,          T,                 U00FE,        U00DE        ] }; // þ, Þ
     key <AD06> { [ y,          Y,                 U2713,        U2611        ] }; // ✓, ☑
-    key <AD07> { [ u,          U,                 U00FC,        U00DC        ] }; // ŭ, Ŭ
+    key <AD07> { [ u,          U,                 U00FC,        U00DC        ] }; // ü, Ü
     key <AD08> { [ i,          I,                 U00EF,        U00CF        ] }; // ï, Ï
     key <AD09> { [ o,          O,                 U00F6,        U00D6        ] }; // ö, Ö
     key <AD10> { [ p,          P,                 U03A6,        U2117        ] }; // Φ, ℗
     key <AD11> { [ bracketleft,  braceleft,       U29D8,        U2235        ] }; // ⧘, ∵
-    key <AD12> { [ bracketright, braceright,      U29D9,        U2234        ] }; // ⧙, ∴ 
+    key <AD12> { [ bracketright, braceright,      U29D9,        U2234        ] }; // ⧙, ∴
     key <BKSL> { [ backslash,    bar,             U2763,        U2762        ] }; // ❣, ❢
 
     // ---------------------------------------------------------------------
@@ -123,4 +83,38 @@ xkb_symbols "base" {
     key <DOWN> { [ Down,  Down,  U2193, U1F447 ] }; // ↓, 👇
     key <RGHT> { [ Right, Right, U2192, U1F449 ] }; // →, 👉
     key <SPCE> { [ space, space, U202F, U00AD ] }; // NNBSP, SHY
+};
+
+// This section is loaded through the nova:transports option. The evdev.post
+// rule appends it after inet(evdev), so the generic multimedia mappings cannot
+// overwrite Nova's dedicated key identities.
+partial modifier_keys
+xkb_symbols "transports" {
+    virtual_modifiers Meta;
+
+    // PB11/PB12/PB25/PB27/PB29 arrive as I674/I675/I688/I690/I692.
+    replace key <I674> { [ Hyper_L ] };           // PB11 → Hyper
+    replace key <I675> { [ Multi_key ] };         // PB12 → Compose
+    replace key <I688> { [ ISO_Level3_Shift ] };  // PB25 → AltGr / Level3
+    replace key <I690> { [ Meta_R ] };            // Legacy PB27 Meta bridge
+    replace key <I692> { [ ISO_Level5_Shift ] };  // PB29 → Level5
+
+    // KC_APP arrives as <COMP>; KC_MENU usage 0x76 arrives as <PROP>.
+    replace key <COMP> {
+        [ Meta_R ],
+        virtualModifiers = Meta
+    };
+    replace key <PROP> { [ Menu ] };
+    replace key <I147> { [ Menu ] };              // Legacy KEY_MENU bridge
+
+    // Remove stock Meta/Level5 assignments, then attach Nova's physical
+    // transports to their intended real modifier bits.
+    modifier_map None { Meta_L, Meta_R };
+    modifier_map None { <META> };
+    modifier_map None { <LVL5> };
+    modifier_map Mod2 { <I692> };
+    modifier_map Mod3 { <COMP>, <I690> };
+    modifier_map Mod5 { <I688> };
+
+    // Hyper intentionally remains a keysym-only userland command namespace.
 };
