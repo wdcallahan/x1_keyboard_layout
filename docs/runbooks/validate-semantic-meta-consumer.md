@@ -1,8 +1,8 @@
 # Runbook: Validate semantic Meta at the consumer boundary
 
-- **Version:** 1.2.0
+- **Version:** 2.0.0
 - **Date:** 2026-07-26
-- **Status:** Ptyxis/tmux adapter selected; prototype awaiting live acceptance
+- **Status:** Ptyxis/tmux Meta+D consumer accepted on MACE
 - **Transport decision:** ADR-0003
 - **Authoritative branch:** `main`
 
@@ -68,7 +68,7 @@ encoding.
 Collect versions without installing or changing anything:
 
 ```bash
-if command -v ptyxis >/dev/null 2>&1; then printf 'Ptyxis: '; ptyxis --version 2>/dev/null; else echo 'Ptyxis: absent'; fi; if command -v kitty >/dev/null 2>&1; then printf 'kitty: '; kitty --version 2>/dev/null; else echo 'kitty: absent'; fi; if command -v tmux >/dev/null 2>&1; then printf 'tmux: '; tmux -V 2>/dev/null; else echo 'tmux: absent'; fi; if command -v emacs >/dev/null 2>&1; then printf 'Emacs: '; emacs --version 2>/dev/null | head -1; else echo 'Emacs: absent'; fi; if command -v nvim >/dev/null 2>&1; then printf 'Neovim: '; nvim --version 2>/dev/null | head -1; else echo 'Neovim: absent'; fi
+if command -v ptyxis >/dev/null 2>&1; then printf 'Ptyxis: '; ptyxis --version 2>/dev/null; else echo 'Ptyxis: absent'; fi; if command -v xterm >/dev/null 2>&1; then printf 'xterm: '; xterm -version 2>/dev/null; else echo 'xterm: absent'; fi; if command -v kitty >/dev/null 2>&1; then printf 'kitty: '; kitty --version 2>/dev/null; else echo 'kitty: absent'; fi; if command -v tmux >/dev/null 2>&1; then printf 'tmux: '; tmux -V 2>/dev/null; else echo 'tmux: absent'; fi; if command -v emacs >/dev/null 2>&1; then printf 'Emacs: '; emacs --version 2>/dev/null | head -1; else echo 'Emacs: absent'; fi; if command -v nvim >/dev/null 2>&1; then printf 'Neovim: '; nvim --version 2>/dev/null | head -1; else echo 'Neovim: absent'; fi
 ```
 
 Keep the output with the acceptance receipt. Versions matter because terminal
@@ -79,18 +79,59 @@ keyboard protocols and multiplexer support change independently.
 In the terminal under test, run:
 
 ```bash
-od -An -tx1
+showkey -a
 ```
 
-Press Meta+F physically, then exit with Control+C. Record the bytes exactly.
+Press each requested chord once, in the stated order, and finish with Control+D.
+Record the decimal bytes exactly. `^[` is the terminal's visible notation for
+Escape byte 27.
 
-A plain `66` byte means the terminal sent ordinary `f`. That is a consumer
-boundary result, not a failed Meta transport.
+Do not use a short interactive `od -An -tx1` capture terminated by Control+C
+as the acceptance receipt. GNU `od` may retain a partial block and then lose
+it when the interrupt terminates the process. That happened during the live
+MACE investigation; `showkey -a` produced the unambiguous byte receipt.
 
-MACE produced plain input in Ptyxis 50.1 / VTE 0.84.0. A direct tmux check
-likewise showed that Control+B followed by D detached correctly, while Meta+D
-printed a literal `d`. That confirms both the existing tmux command and the
-consumer-boundary loss.
+### Native xterm reference
+
+In XTerm 406, press Meta+D, Alt+D, then Control+D. MACE produced:
+
+```text
+Meta+D -> 27 100
+Alt+D  ->    100
+```
+
+Byte 27 followed by byte 100 is `ESC d`, the traditional terminal encoding
+of Meta+D. At a Bash prompt, typing `echo one two` without Enter, pressing
+Control+A, and then pressing Meta+D deleted `echo`. That is an end-to-end
+native Readline `M-d` proof.
+
+Xterm therefore recognizes the modifier containing `Meta_R` on real Mod3.
+Its current configuration does not encode Alt+D; Alt+D reaches the PTY as
+plain `d`.
+
+### Ptyxis/VTE boundary
+
+Before the adapter, MACE's Ptyxis 50.1 / VTE 0.84.0 delivered Meta+D as plain
+`d`, while Alt retained VTE's legacy Escape-prefix behavior. After enabling
+the accepted adapter, `showkey -a` in Ptyxis produced:
+
+```text
+Alt+D  -> 27 100
+Meta+D ->  2 100
+```
+
+Byte 2 followed by byte 100 is Control+B, D: exactly the sequence injected by
+the scoped adapter. The result proves all three relevant facts:
+
+1. VTE assigns `ESC d` to Alt+D;
+2. VTE does not natively serialize semantic Mod3 Meta;
+3. the adapter preserves the distinction by emitting the selected tmux command
+   rather than aliasing Meta to Alt.
+
+A richer wire encoding cannot recover a modifier after a terminal frontend has
+discarded it. Conversely, xterm's result proves that the firmware/XKB/Wayland
+transport is sound and that a terminal frontend can consume the real Meta
+modifier correctly.
 
 ## Protocol-aware terminal proof
 
@@ -128,7 +169,7 @@ report it. Current tmux documentation describes Control, historical Meta
 
 ## Decision boundary
 
-The first real consumer has now been selected:
+The first real consumer has now been selected and accepted:
 
 | Consumer path | Meaning |
 | --- | --- |
@@ -141,7 +182,7 @@ The architecture rejects a global XKB alias from Meta to Alt. That experiment
 made the terminal boundary easier only by destroying the semantic distinction
 the keyboard was built to preserve.
 
-The selected prototype is
+The accepted adapter is
 `nova-semantic-meta@wdcallahan`, documented in
 `docs/designs/semantic-meta-ptyxis-adapter.md`. Mutter sees real Mod3 before
 Ptyxis discards the modifier. The extension therefore registers exact
@@ -178,7 +219,7 @@ tmux detach is accepted only when:
 - the solution does not rename Meta as Alt globally;
 - behavior outside the intended consumer is understood.
 
-## Install the prototype
+## Install the adapter
 
 From `~/src/x1_keyboard_layout`:
 
@@ -209,6 +250,25 @@ must not be consumed. Ptyxis tabs that are not running tmux remain a documented
 limitation: they receive the ordinary terminal effects of Control+B followed by
 D.
 
+### Accepted MACE receipt
+
+MACE passed this contract on 2026-07-26:
+
+- version 3 was `ACTIVE` after reboot;
+- Meta+D detached exactly once, without leaking D;
+- reattachment preserved the unfinished command line in the same tmux session;
+- Firefox and GNOME Text Editor continued receiving ordinary D while Mod3 was
+  held, confirming that the adapter remained scoped to Ptyxis;
+- `wev` outside Ptyxis showed `Meta_R`, depressed Mod3, D press/release, and
+  a clean modifier release;
+- the Ptyxis byte receipt was Alt+D = `27 100` and adapted Meta+D =
+  `2 100`;
+- the native xterm reference was Meta+D = `27 100`, Alt+D = `100`, and
+  Bash Readline successfully consumed native `M-d`.
+
+The accepted component remains intentionally command-specific. It does not
+claim to make every terminal application understand semantic Meta.
+
 Emergency rollback is immediate:
 
 ```bash
@@ -217,6 +277,8 @@ gnome-extensions disable nova-semantic-meta@wdcallahan
 
 ## References
 
+- Xterm Meta-key handling: <https://invisible-island.net/xterm/xterm-meta-key.html>
+- Xterm keyboard control sequences: <https://invisible-island.net/xterm/ctlseqs/ctlseqs.html>
 - Kitty keyboard protocol: <https://sw.kovidgoyal.net/kitty/keyboard-protocol/>
 - tmux modifier documentation: <https://github.com/tmux/tmux/wiki/Modifier-Keys>
 - tmux manual extended keys: <https://man.openbsd.org/tmux.1>
