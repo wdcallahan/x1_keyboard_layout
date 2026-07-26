@@ -3,7 +3,7 @@
   hosts: localhost
 
   vars:
-    nova_input_sources: "[('xkb', 'us-nova')]"
+    nova_input_sources: "[('xkb', 'us'), ('xkb', 'us-nova')]"
     nova_xkb_options: "['shift:both_capslock', 'nova:transports']"
 
   tasks:
@@ -34,13 +34,13 @@
       register: current_sources
       changed_when: false
 
-    - name: Set Nova as the only GNOME input source
+    - name: Set GNOME input sources to US and Nova
       ansible.builtin.command:
         cmd: "gsettings set org.gnome.desktop.input-sources sources \"{{ nova_input_sources }}\""
       when: current_sources.stdout | trim != nova_input_sources
       changed_when: true
 
-    - name: Verify Nova is the only GNOME input source
+    - name: Verify GNOME input sources
       ansible.builtin.command:
         cmd: gsettings get org.gnome.desktop.input-sources sources
       register: verified_sources
