@@ -38,14 +38,49 @@
         dest: "{{ ansible_facts.env.HOME }}/.config/xkb/rules/evdev"
         mode: "0644"
 
-    # Install the read-only prototype, but leave enablement explicit until MACE
-    # proves both its alarm and healthy-session behavior.
-    - name: Install Nova Level5 sentinel prototype
+    # GNOME Shell may need a fresh session to discover newly installed source.
+    # Enablement intent is managed separately and survives that boundary.
+    - name: Install Nova Level5 sentinel
       ansible.builtin.copy:
         src: "files/gnome-shell/extensions/{{ nova_level5_sentinel_uuid }}/{{ item }}"
         dest: "{{ ansible_facts.env.HOME }}/.local/share/gnome-shell/extensions/{{ nova_level5_sentinel_uuid }}/{{ item }}"
         mode: "0644"
       loop: "{{ nova_level5_sentinel_files }}"
+
+    - name: Read enabled GNOME Shell extensions
+      ansible.builtin.command:
+        argv:
+          - gsettings
+          - get
+          - org.gnome.shell
+          - enabled-extensions
+      register: current_gnome_shell_extensions
+      changed_when: false
+
+    # Preserve every existing extension and append only Nova's UUID. Writing the
+    # GSettings membership also handles first installation before Shell has
+    # discovered the new source; it will load on the next fresh session.
+    - name: Enable Nova Level5 sentinel persistently
+      ansible.builtin.command:
+        argv:
+          - gsettings
+          - set
+          - org.gnome.shell
+          - enabled-extensions
+          - "{{ (((current_gnome_shell_extensions.stdout | regex_replace('^@as ', '') | from_yaml) + [nova_level5_sentinel_uuid]) | unique | list) | to_json }}"
+      when: nova_level5_sentinel_uuid not in (current_gnome_shell_extensions.stdout | regex_replace('^@as ', '') | from_yaml)
+      changed_when: true
+
+    - name: Verify Nova Level5 sentinel is enabled
+      ansible.builtin.command:
+        argv:
+          - gsettings
+          - get
+          - org.gnome.shell
+          - enabled-extensions
+      register: verified_gnome_shell_extensions
+      changed_when: false
+      failed_when: nova_level5_sentinel_uuid not in (verified_gnome_shell_extensions.stdout | regex_replace('^@as ', '') | from_yaml)
 
     - name: Remove obsolete Nova post-rules file
       ansible.builtin.file:
