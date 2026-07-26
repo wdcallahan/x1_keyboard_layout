@@ -1,6 +1,6 @@
 # Runbook: Validate the single-group Nova keypad map
 
-- **Version:** 1.1.0
+- **Version:** 1.2.0
 - **Date:** 2026-07-26
 - **Behavior label:** `nova-single-group-keypad-2026-07-26`
 - **Authoritative branch:** `main`
@@ -77,6 +77,20 @@ xkbcli compile-keymap --include /tmp/nova-xkb-proof --include-defaults --rules e
 The expanded map is the evidence source for the keypad key types, symbols,
 group count, and special transport definitions. Do not deploy until those
 details have been reviewed.
+
+Extract the relevant key blocks and reject any extra symbol group:
+
+```bash
+awk '/^[[:space:]]*key <(I674|I675|I688|I689|I691|I692|COMP|PROP|NMLK|KP7|KP8|KP9|KP4|KP5|KP6|KP1|KP2|KP3|KP0|KPDL|KPPT|KPEN|KPEQ|KPDV|KPMU|KPSU|KPAD)>/ { show=1 } show { print } show && /};[[:space:]]*$/ { show=0 }' /tmp/nova-single-group-keypad.xkb && if grep -nE 'symbols\[Group[2-9][0-9]*\]' /tmp/nova-single-group-keypad.xkb; then echo 'FAIL: extra symbol group found'; else echo 'PASS: no Group2-or-higher symbols found'; fi
+```
+
+Required state:
+
+- `<NMLK>` is `ONE_LEVEL` / `VoidSymbol`;
+- every keypad number and operator is `ONE_LEVEL` with exactly one keypad
+  symbol;
+- each current firmware transport has its documented keysym;
+- no Group2-or-higher symbol assignment exists.
 
 ## Deploy only after offline acceptance
 

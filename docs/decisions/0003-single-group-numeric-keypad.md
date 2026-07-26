@@ -1,8 +1,8 @@
 # ADR-0003: Use one Nova group and an always-numeric keypad
 
-- **Version:** 1.1.0
+- **Version:** 1.2.0
 - **Date:** 2026-07-26
-- **Status:** Accepted for staged offline validation
+- **Status:** Accepted for deployment
 - **Behavior label:** `nova-single-group-keypad-2026-07-26`
 - **Supersedes:** the separate `nova:transports` assembly from ADR-0002
 - **Validation runbook:** `docs/runbooks/validate-single-group-keypad.md`
@@ -95,9 +95,12 @@ modifier_map None { Num_Lock };
 
 Using `<NMLK>` does not cancel that inherited keysym-based mapping.
 
-`<NMLK>` itself is replaced with a one-level `NoSymbol` key. Every keypad
-number and operator is replaced with a `ONE_LEVEL` definition containing only
-its keypad symbol.
+The outer symbols recipe merges `pc+us-nova`. In that outer override merge,
+`NoSymbol` is transparent and therefore does not erase the `Num_Lock` supplied
+by `pc`; a local `replace key` qualifier inside `us-nova` does not propagate
+into its parent merge. `<NMLK>` therefore uses the explicit `VoidSymbol`
+keysym, which replaces the inherited value. Every keypad number and operator
+is replaced with a `ONE_LEVEL` definition containing only its keypad symbol.
 
 ## Safety boundary
 
@@ -116,13 +119,24 @@ Before deployment:
 1. the candidate compiles with `xkbcli` 1.13.1;
 2. KcCGST symbols resolve to `pc+us-nova+shift(both_capslock)`;
 3. `inet(evdev)` is absent;
-4. `<NMLK>` is absent from every real modifier map;
-5. `<I692>` owns Mod2 / LevelFive;
-6. `<COMP>` owns Mod3 / Meta and is absent from Mod1;
-7. `<I688>` owns Mod5 / LevelThree;
-8. keypad keys compile as `ONE_LEVEL` numeric/operator keys;
-9. there is exactly one layout group;
-10. the proof sandbox uses the repository's `files/evdev`, not the system rule.
+4. `<NMLK>` compiles as `ONE_LEVEL` / `VoidSymbol`;
+5. `<NMLK>` is absent from every real modifier map;
+6. `<I692>` owns Mod2 / LevelFive;
+7. `<COMP>` owns Mod3 / Meta and is absent from Mod1;
+8. `<I688>` owns Mod5 / LevelThree;
+9. keypad keys compile as `ONE_LEVEL` numeric/operator keys;
+10. there is exactly one layout group;
+11. the proof sandbox uses the repository's `files/evdev`, not the system rule.
+
+### Offline validation receipt
+
+MACE passed all pre-deployment criteria on 2026-07-26 with `xkbcli` 1.13.1.
+The compiled recipe was exactly
+`pc+us-nova+shift(both_capslock)`, `<NMLK>` was
+`ONE_LEVEL` / `VoidSymbol` with no modifier mapping, the dedicated Level3,
+Level5, and Meta transports retained both their real and virtual modifiers,
+every keypad key was one-level numeric/operator, and no Group2-or-higher
+symbols were present.
 
 After deployment and one deliberate GNOME reload:
 

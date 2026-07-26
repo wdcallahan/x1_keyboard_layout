@@ -394,6 +394,9 @@ It does not toggle host NumLock state.
 
 It toggles the keyboard's mouse layer.
 
+The host `<NMLK>` keycode is one-level `VoidSymbol` and has no real modifier
+mapping, so even an unexpected host-side NumLock event cannot engage NumLock.
+
 The keypad should always remain numeric. This preserves muscle memory and avoids the classic NumLock problem where the keypad unpredictably changes between numbers and navigation.
 
 | Physical key | Intended behavior |

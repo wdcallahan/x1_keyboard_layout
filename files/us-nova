@@ -106,7 +106,7 @@ xkb_symbols "base" {
     // ---------------------------------------------------------------------
     // Always-numeric keypad
 
-    replace key <NMLK> { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ NoSymbol ] };
+    replace key <NMLK> { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ VoidSymbol ] };
 
     replace key <KP7>  { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_7 ] };
     replace key <KP8>  { type[Group1] = "ONE_LEVEL", symbols[Group1] = [ KP_8 ] };
