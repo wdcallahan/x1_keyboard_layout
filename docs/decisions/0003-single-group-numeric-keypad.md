@@ -1,8 +1,8 @@
 # ADR-0003: Use one Nova group and an always-numeric keypad
 
-- **Version:** 1.4.0
+- **Version:** 1.5.0
 - **Date:** 2026-07-26
-- **Status:** Accepted and deployed
+- **Status:** Accepted; GNOME Mod2 correction pending
 - **Behavior label:** `nova-single-group-keypad-2026-07-26`
 - **Supersedes:** the separate `nova:transports` assembly from ADR-0002
 - **Validation runbook:** `docs/runbooks/validate-single-group-keypad.md`
@@ -85,6 +85,25 @@ The real modifier allocation remains:
 | Mod4 | Super |
 | Mod5 | Level3 / AltGr |
 
+### GNOME NumLock restoration boundary
+
+Removing `Num_Lock` from XKB is necessary but not sufficient on GNOME Wayland.
+GNOME may remember NumLock as a boolean between sessions, and Mutter restores
+an enabled value by locking the real modifier named `Mod2` directly. It does
+not consult the keymap to discover whether NumLock still owns Mod2.
+
+Because Nova deliberately assigns Mod2 to LevelFive, a remembered NumLock-on
+state pre-locks LevelFive at login. The managed host contract is therefore:
+
+```text
+org.gnome.desktop.peripherals.keyboard remember-numlock-state = false
+org.gnome.desktop.peripherals.keyboard numlock-state          = false
+```
+
+`install_layout.yml` enforces and verifies both values before a deliberate
+session reload. This is a compositor compatibility requirement, not a hidden
+relationship between NumLock and LevelFive.
+
 The stock PC symbols map NumLock indirectly with the keysym target
 `Num_Lock`. XKB requires `modifier_map None` to use the same target form as the
 mapping it removes. The correct removal is therefore:
@@ -142,10 +161,12 @@ After deployment and one deliberate GNOME reload:
 
 1. GNOME reports only `us-nova`;
 2. GNOME reports only `shift:both_capslock`;
-3. the live Wayland keymap has the same modifier ownership as the offline map;
-4. the keypad always types keypad numbers and operators;
-5. host NumLock cannot activate Level5;
-6. Compose, AltGr, Meta, Super, Any, Whisper, Hyper, and both-Shift Caps retain
+3. GNOME reports both NumLock compatibility settings as `false`;
+4. the live Wayland keymap has the same modifier ownership as the offline map;
+5. unmodified B reaches Level1 rather than arriving with LevelFive pre-locked;
+6. the keypad always types keypad numbers and operators;
+7. host NumLock cannot activate Level5;
+8. Compose, AltGr, Meta, Super, Any, Whisper, Hyper, and both-Shift Caps retain
    their intended identities.
 
 ## Firmware follow-up
