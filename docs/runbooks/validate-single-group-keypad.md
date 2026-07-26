@@ -1,12 +1,15 @@
 # Runbook: Validate the single-group Nova keypad map
 
-- **Version:** 1.2.0
+- **Version:** 1.2.1
 - **Date:** 2026-07-26
 - **Behavior label:** `nova-single-group-keypad-2026-07-26`
 - **Authoritative branch:** `main`
 
 The installed symbols and private rules files are Ansible-managed. Do not edit
 `~/.config/xkb/symbols/us-nova` or `~/.config/xkb/rules/evdev` directly.
+
+The project-local `ansible.cfg` selects its explicit localhost inventory and
+disables cowsay so validation output remains compact and selectable.
 
 All commands below are intentionally one physical line. Terminal wrapping is
 display only.
@@ -81,7 +84,7 @@ details have been reviewed.
 Extract the relevant key blocks and reject any extra symbol group:
 
 ```bash
-awk '/^[[:space:]]*key <(I674|I675|I688|I689|I691|I692|COMP|PROP|NMLK|KP7|KP8|KP9|KP4|KP5|KP6|KP1|KP2|KP3|KP0|KPDL|KPPT|KPEN|KPEQ|KPDV|KPMU|KPSU|KPAD)>/ { show=1 } show { print } show && /};[[:space:]]*$/ { show=0 }' /tmp/nova-single-group-keypad.xkb && if grep -nE 'symbols\[Group[2-9][0-9]*\]' /tmp/nova-single-group-keypad.xkb; then echo 'FAIL: extra symbol group found'; else echo 'PASS: no Group2-or-higher symbols found'; fi
+awk '/^[[:space:]]*key <(I674|I675|I688|I689|I691|I692|COMP|PROP|NMLK|KP7|KP8|KP9|KP4|KP5|KP6|KP1|KP2|KP3|KP0|KPDL|KPPT|KPEN|KPEQ|KPDV|KPMU|KPSU|KPAD)>/ { show=1 } show { print } show && /};[[:space:]]*$/ { show=0 }' /tmp/nova-single-group-keypad.xkb && if grep -nE 'symbols\[(Group)?([2-9]|[1-9][0-9]+)\]' /tmp/nova-single-group-keypad.xkb; then echo 'FAIL: extra symbol group found'; else echo 'PASS: no Group2-or-higher symbols found'; fi
 ```
 
 Required state:
