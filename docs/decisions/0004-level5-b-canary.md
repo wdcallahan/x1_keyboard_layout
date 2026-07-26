@@ -1,8 +1,8 @@
 # ADR-0004: Populate B as the first eight-level Level5 canary
 
-- **Version:** 1.1.0
+- **Version:** 1.2.0
 - **Date:** 2026-07-26
-- **Status:** Offline proof accepted; deployment pending
+- **Status:** Live canary rejected; GNOME Mod2 correction pending
 - **Behavior label:** `nova-level5-b-canary-2026-07-26`
 - **Depends on:** ADR-0003 / `nova-single-group-keypad-2026-07-26`
 - **Validation runbook:** `docs/runbooks/validate-level5-b-canary.md`
@@ -107,9 +107,56 @@ keymap established all of the following:
   LevelFive/Mod2 respectively;
 - the map contains no Group2-or-higher symbols.
 
-The command concluded `PASS: Level5 B candidate compiled in one group`. The
-candidate is cleared for managed deployment. Ansible deployment, one deliberate
-session reload, and live physical-key acceptance remain pending.
+The command concluded `PASS: Level5 B candidate compiled in one group` and
+cleared the candidate for its first managed deployment.
+
+## First live deployment and canary rejection
+
+MACE pulled repository commit `21f09d9`, installed the symbols file, passed both
+byte comparisons, and proved Ansible idempotence: the first run changed one file
+and the second changed zero. MACE then rebooted to establish a fresh GNOME
+Wayland keymap.
+
+The first live B test produced only the upper four symbols:
+
+```text
+🐇 🐰 🥬 🥕 🐇 🐰 🥬 🥕
+```
+
+Ordinary B therefore produced `🐇`; the physical Level5 hold did not change the
+result. The Unicode vocabulary, eight-level type, and physical modifier
+combinations were working, but LevelFive was already active before any key was
+pressed.
+
+MACE's GNOME state then reported:
+
+```text
+remember-numlock-state = true
+numlock-state          = true
+```
+
+GNOME's settings schema remembers NumLock between sessions. Mutter's native
+seat implementation restores that state by explicitly locking the real
+modifier named `Mod2`; it does not resolve the current keymap's virtual NumLock
+assignment. Nova deliberately uses real Mod2 for LevelFive, so the restored
+NumLock state pre-locked LevelFive despite `<NMLK>` being void and absent from
+modifier maps.
+
+Authoritative implementation references:
+
+- [GNOME keyboard settings schema](https://github.com/GNOME/gsettings-desktop-schemas/blob/7b18982df798313a7adbcca9c9f5a8c3d819cf4c/schemas/org.gnome.desktop.peripherals.gschema.xml.in)
+- [Mutter native Mod2 restoration](https://github.com/GNOME/mutter/blob/52924b84de06c4ce01551449c2dc2d8d74ea754c/src/backends/native/meta-seat-impl.c)
+
+The corrective decision is to manage both GNOME settings as `false` before the
+next session reload:
+
+```text
+remember-numlock-state = false
+numlock-state          = false
+```
+
+Repository commit `4264de0` adds that policy to `install_layout.yml`. A fresh
+session and the original physical acceptance suite remain required.
 
 ## Consequences
 
