@@ -111,6 +111,7 @@ of the keyboard to an eight-level vocabulary.
 
 ## Rollback
 
-Rollback is a new commit that restores the four-symbol B line and the
-`Nova custom 4-level` display name, followed by the normal Ansible deployment
-and one deliberate GNOME keymap reload. Published history is not rewritten.
+Rollback is a new commit that restores the four-symbol B line while retaining
+the durable `Nova custom single-group` display name, followed by the normal
+Ansible deployment and one deliberate GNOME keymap reload. Published history is
+not rewritten.
