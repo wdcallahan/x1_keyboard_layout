@@ -7,16 +7,25 @@
     nova_xkb_options: "['shift:both_capslock']"
 
   tasks:
-    - name: Ensure user XKB symbols directory exists
+    - name: Ensure user XKB directories exist
       ansible.builtin.file:
-        path: "{{ ansible_facts.env.HOME }}/.config/xkb/symbols"
+        path: "{{ item }}"
         state: directory
         mode: "0755"
+      loop:
+        - "{{ ansible_facts.env.HOME }}/.config/xkb/symbols"
+        - "{{ ansible_facts.env.HOME }}/.config/xkb/rules"
 
     - name: Install Nova symbols file
       ansible.builtin.copy:
         src: files/us-nova
         dest: "{{ ansible_facts.env.HOME }}/.config/xkb/symbols/us-nova"
+        mode: "0644"
+
+    - name: Install Nova private evdev rules
+      ansible.builtin.copy:
+        src: files/evdev
+        dest: "{{ ansible_facts.env.HOME }}/.config/xkb/rules/evdev"
         mode: "0644"
 
     - name: Remove obsolete Nova post-rules file

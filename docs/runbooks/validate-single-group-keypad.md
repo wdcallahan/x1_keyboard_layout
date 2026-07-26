@@ -1,12 +1,12 @@
 # Runbook: Validate the single-group Nova keypad map
 
-- **Version:** 1.0.0
+- **Version:** 1.1.0
 - **Date:** 2026-07-26
 - **Behavior label:** `nova-single-group-keypad-2026-07-26`
 - **Authoritative branch:** `main`
 
-The installed symbols file is Ansible-managed. Do not edit
-`~/.config/xkb/symbols/us-nova` directly.
+The installed symbols and private rules files are Ansible-managed. Do not edit
+`~/.config/xkb/symbols/us-nova` or `~/.config/xkb/rules/evdev` directly.
 
 All commands below are intentionally one physical line. Terminal wrapping is
 display only.
@@ -34,7 +34,7 @@ git pull --ff-only
 ## Build the isolated candidate
 
 ```bash
-rm -rf /tmp/nova-xkb-proof && mkdir -p /tmp/nova-xkb-proof/symbols && cp files/us-nova /tmp/nova-xkb-proof/symbols/us-nova && xkbcli compile-keymap --include /tmp/nova-xkb-proof --include-defaults --rules evdev --model pc104 --layout us-nova --options shift:both_capslock --test
+rm -rf /tmp/nova-xkb-proof && mkdir -p /tmp/nova-xkb-proof/symbols /tmp/nova-xkb-proof/rules && cp files/us-nova /tmp/nova-xkb-proof/symbols/us-nova && cp files/evdev /tmp/nova-xkb-proof/rules/evdev && xkbcli compile-keymap --include /tmp/nova-xkb-proof --include-defaults --rules evdev --model pc104 --layout us-nova --options shift:both_capslock --test
 ```
 
 No output and exit status zero means compilation succeeded.
@@ -84,10 +84,10 @@ details have been reviewed.
 ansible-playbook install_layout.yml
 ```
 
-Verify the managed symbols file:
+Verify both managed files:
 
 ```bash
-cmp files/us-nova ~/.config/xkb/symbols/us-nova
+cmp files/us-nova ~/.config/xkb/symbols/us-nova && cmp files/evdev ~/.config/xkb/rules/evdev
 ```
 
 No output means the files match.

@@ -1,6 +1,6 @@
 # ADR-0003: Use one Nova group and an always-numeric keypad
 
-- **Version:** 1.0.0
+- **Version:** 1.1.0
 - **Date:** 2026-07-26
 - **Status:** Accepted for staged offline validation
 - **Behavior label:** `nova-single-group-keypad-2026-07-26`
@@ -60,8 +60,20 @@ sources     = [('xkb', 'us-nova')]
 xkb-options = ['shift:both_capslock']
 ```
 
+`files/evdev` is a Nova-managed private copy of the generated xkeyboard-config
+`evdev` rules. The installer deploys it to
+`~/.config/xkb/rules/evdev`, ahead of the system XKB include path. It preserves
+the ordinary rules but deliberately omits the automatic model-to-`inet(evdev)`
+symbols mapping. The system copy under `/usr/share/X11/xkb` remains untouched.
+
 The `nova:transports` option and `files/evdev.post` are removed. The installer
 also removes a previously deployed `~/.config/xkb/rules/evdev.post`.
+
+Because this complete private rule shadows the generated system rule, an
+xkeyboard-config update does not automatically update it. Refreshes must start
+from the newly generated system `evdev` rule, preserve the omission of the
+automatic inet symbols stanza, and pass this decision's validation runbook
+before deployment.
 
 The real modifier allocation remains:
 
@@ -92,9 +104,10 @@ its keypad symbol.
 This change does not flash firmware and must not be deployed merely because its
 source looks correct.
 
-The exact repository candidate must first compile on MACE with its installed
-libxkbcommon and xkeyboard-config data. Its resolved component and modifier maps
-must pass the runbook before `install_layout.yml` is run.
+The exact repository candidate—including both `files/us-nova` and
+`files/evdev`—must first compile on MACE with its installed libxkbcommon and
+xkeyboard-config data. Its resolved component and modifier maps must pass the
+runbook before `install_layout.yml` is run.
 
 ## Acceptance criteria
 
@@ -108,7 +121,8 @@ Before deployment:
 6. `<COMP>` owns Mod3 / Meta and is absent from Mod1;
 7. `<I688>` owns Mod5 / LevelThree;
 8. keypad keys compile as `ONE_LEVEL` numeric/operator keys;
-9. there is exactly one layout group.
+9. there is exactly one layout group;
+10. the proof sandbox uses the repository's `files/evdev`, not the system rule.
 
 After deployment and one deliberate GNOME reload:
 
@@ -133,4 +147,6 @@ That firmware work is separate from this host-side decision.
 
 Rollback is an explicit corrective commit on linear `main`, followed by
 `git pull --ff-only` and `ansible-playbook install_layout.yml` on MACE.
-Published history is not rewritten.
+The rollback commit must explicitly remove or replace the deployed private
+`~/.config/xkb/rules/evdev`; merely deleting `files/evdev` from the repository
+would leave the managed copy active. Published history is not rewritten.

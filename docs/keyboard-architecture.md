@@ -526,7 +526,10 @@ For relegendable keys, the printed legend may change with software bindings, but
 
 ## 26. Installation and reload boundaries
 
-The XKB/layout repo installs the `us-nova` symbols file under the user's XKB configuration directory and sets GNOME input sources/options.
+The XKB/layout repo installs the `us-nova` symbols file and a private `evdev`
+rules resolver under the user's XKB configuration directory, then sets the
+GNOME input sources/options. The private rule shadows the generated system rule
+without modifying anything under `/usr/share/X11/xkb`.
 
 Important GNOME/XKB state:
 
@@ -534,7 +537,8 @@ Important GNOME/XKB state:
 | --- | --- |
 | Input sources | Exactly `[('xkb', 'us-nova')]`; Nova is the sole source and sole XKB group. |
 | XKB options | Exactly `['shift:both_capslock']`. |
-| Rules extension | None; the former `nova:transports` option and `evdev.post` hook are obsolete. |
+| Rules resolver | Managed `~/.config/xkb/rules/evdev`; it omits automatic `inet(evdev)` assembly. |
+| Obsolete extension | The former `nova:transports` option and `evdev.post` hook are removed. |
 | Stale option removed | `compose:ralt`, because there is no longer a physical Right Alt key used for Compose. |
 
 After changing the installed symbols file, GNOME may not reload the keymap immediately. A logout/login may be needed. The file being installed correctly does not guarantee the current Wayland session has rebuilt its active keymap.
