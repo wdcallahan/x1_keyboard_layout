@@ -1,6 +1,6 @@
 # Runbook: Validate the Level5 B canary
 
-- **Version:** 1.2.0
+- **Version:** 1.3.0
 - **Date:** 2026-07-26
 - **Behavior label:** `nova-level5-b-canary-2026-07-26`
 - **Decision:** `docs/decisions/0004-level5-b-canary.md`
@@ -79,15 +79,15 @@ Run the managed installer, compare both installed files, then prove
 idempotence:
 
 ```bash
-ansible-playbook install_layout.yml && cmp files/us-nova ~/.config/xkb/symbols/us-nova && cmp files/evdev ~/.config/xkb/rules/evdev && cmp files/gnome-shell/extensions/nova-level5-sentinel@wdcallahan/extension.js ~/.local/share/gnome-shell/extensions/nova-level5-sentinel@wdcallahan/extension.js && cmp files/gnome-shell/extensions/nova-level5-sentinel@wdcallahan/metadata.json ~/.local/share/gnome-shell/extensions/nova-level5-sentinel@wdcallahan/metadata.json && test "$(gsettings get org.gnome.desktop.peripherals.keyboard remember-numlock-state)" = false && test "$(gsettings get org.gnome.desktop.peripherals.keyboard numlock-state)" = false && ansible-playbook install_layout.yml
+ansible-playbook install_layout.yml && cmp files/us-nova ~/.config/xkb/symbols/us-nova && cmp files/evdev ~/.config/xkb/rules/evdev && cmp files/gnome-shell/extensions/nova-level5-sentinel@wdcallahan/extension.js ~/.local/share/gnome-shell/extensions/nova-level5-sentinel@wdcallahan/extension.js && cmp files/gnome-shell/extensions/nova-level5-sentinel@wdcallahan/metadata.json ~/.local/share/gnome-shell/extensions/nova-level5-sentinel@wdcallahan/metadata.json && test "$(gsettings get org.gnome.desktop.peripherals.keyboard remember-numlock-state)" = false && test "$(gsettings get org.gnome.desktop.peripherals.keyboard numlock-state)" = false && gsettings get org.gnome.shell enabled-extensions | grep -Fq "'nova-level5-sentinel@wdcallahan'" && ansible-playbook install_layout.yml
 ```
 
 The corrective first run may change `remember-numlock-state` and
-`numlock-state` from `true` to `false` and install the staged sentinel
-files. The second run must report zero changes. All four byte comparisons and
-both boolean assertions are silent on success. The playbook does not yet enable
-the extension; follow `docs/designs/level5-mod2-sentinel.md` for its explicit
-fault/healthy proof.
+`numlock-state` from `true` to `false`, install the sentinel files, and
+append its UUID to GNOME's enabled-extension list. The second run must report
+zero changes. All four byte comparisons, both boolean assertions, and the UUID
+membership assertion are silent on success. Existing enabled extensions must be
+preserved.
 
 ## Reload boundary
 
@@ -101,6 +101,8 @@ proof.
 Changing the two GNOME booleans does not clear Mod2 from the already-running
 Mutter seat. Confirm both values are false, then perform one fresh login or
 reboot. On the next session Mutter will skip its raw-Mod2 NumLock restoration.
+That same boundary lets GNOME Shell discover newly installed extension source;
+the managed enabled membership already persists before the reload.
 
 ## Known canary failure signature
 
@@ -150,6 +152,33 @@ B b Β Α 🐰 🐇 🥬 🥕
 This second line is the documented behavior of the standard
 `EIGHT_LEVEL_SEMIALPHABETIC` type, not an accidental side effect.
 
+## Sentinel acceptance
+
+Confirm the fresh session loaded the managed extension:
+
+```bash
+gnome-extensions info nova-level5-sentinel@wdcallahan
+```
+
+It must report `Enabled: Yes` and `State: ACTIVE`, with no rabbit indicator
+during healthy typing. A legitimate Level5 chord may keep Mod2 depressed for
+longer than the sentinel grace period; it must not become latched or locked and
+must not alarm.
+
+The disposable policy-alarm proof is:
+
+```bash
+gsettings set org.gnome.desktop.peripherals.keyboard numlock-state true && sleep 3 && gsettings set org.gnome.desktop.peripherals.keyboard numlock-state false && gsettings get org.gnome.desktop.peripherals.keyboard numlock-state
+```
+
+The top-bar rabbit and unsafe-policy notification must appear while the final
+command prints `false`. This test changes a watched preference, not Mod2. Reset
+the intentionally latched receipt and restore a clean active sentinel with:
+
+```bash
+gsettings set org.gnome.desktop.peripherals.keyboard remember-numlock-state false && gsettings set org.gnome.desktop.peripherals.keyboard numlock-state false && gnome-extensions disable nova-level5-sentinel@wdcallahan && gnome-extensions enable nova-level5-sentinel@wdcallahan && gnome-extensions info nova-level5-sentinel@wdcallahan
+```
+
 ## Regression checks
 
 Verify all of the following before accepting the deployment:
@@ -170,9 +199,10 @@ xkbcli interactive-wayland
 
 ## Acceptance receipt
 
-After the physical test succeeds, record the exact commit, MACE's xkbcommon
-version, offline proof result, both GNOME NumLock booleans, session reload
-method, eight-symbol line, Caps line, and regression results in ADR-0004.
+ADR-0004 records MACE's 2026-07-26 offline proof, initial locked-Level5
+rejection, corrective reboot, exact eight-symbol success, long depressed-Mod2
+proof, sentinel alarm, and clean recovery. Future validation should append a new
+receipt only when the environment or observed result materially differs.
 
 ## Rollback
 
