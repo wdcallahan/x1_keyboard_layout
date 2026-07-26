@@ -1,6 +1,6 @@
 # Runbook: Validate semantic Meta at the consumer boundary
 
-- **Version:** 1.0.0
+- **Version:** 1.0.1
 - **Date:** 2026-07-26
 - **Status:** Prepared; consumer not yet selected
 - **Transport decision:** ADR-0003
@@ -68,7 +68,7 @@ encoding.
 Collect versions without installing or changing anything:
 
 ```bash
-printf 'Ptyxis: '; ptyxis --version 2>/dev/null || echo absent; printf 'kitty: '; kitty --version 2>/dev/null || echo absent; printf 'tmux: '; tmux -V 2>/dev/null || echo absent; printf 'Emacs: '; emacs --version 2>/dev/null | head -1 || echo absent; printf 'Neovim: '; nvim --version 2>/dev/null | head -1 || echo absent
+if command -v ptyxis >/dev/null 2>&1; then printf 'Ptyxis: '; ptyxis --version 2>/dev/null; else echo 'Ptyxis: absent'; fi; if command -v kitty >/dev/null 2>&1; then printf 'kitty: '; kitty --version 2>/dev/null; else echo 'kitty: absent'; fi; if command -v tmux >/dev/null 2>&1; then printf 'tmux: '; tmux -V 2>/dev/null; else echo 'tmux: absent'; fi; if command -v emacs >/dev/null 2>&1; then printf 'Emacs: '; emacs --version 2>/dev/null | head -1; else echo 'Emacs: absent'; fi; if command -v nvim >/dev/null 2>&1; then printf 'Neovim: '; nvim --version 2>/dev/null | head -1; else echo 'Neovim: absent'; fi
 ```
 
 Keep the output with the acceptance receipt. Versions matter because terminal
