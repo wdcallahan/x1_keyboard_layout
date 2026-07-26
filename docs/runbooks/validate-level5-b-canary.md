@@ -1,6 +1,6 @@
 # Runbook: Validate the Level5 B canary
 
-- **Version:** 1.0.0
+- **Version:** 1.1.0
 - **Date:** 2026-07-26
 - **Behavior label:** `nova-level5-b-canary-2026-07-26`
 - **Decision:** `docs/decisions/0004-level5-b-canary.md`
@@ -14,9 +14,13 @@ Every shell command is intentionally one physical line.
 
 ## Safety boundary
 
-The change is confined to the B key's symbol type and vocabulary. PB29, I692,
-Mod2, LevelFive, the private evdev rules, the keypad, and the QMK firmware remain
+The symbol change is confined to the B key's type and vocabulary. PB29, I692,
+Mod2, LevelFive, the private evdev rules, the keypad, and QMK firmware remain
 unchanged.
+
+The corrective host policy also disables GNOME's remembered NumLock state.
+Mutter restores NumLock by locking raw Mod2, which Nova uses for LevelFive.
+This policy is required even though `<NMLK>` is void and owns no modifier map.
 
 Compile the exact repository source offline before deployment. Stop if any
 assertion or compile step fails.
@@ -75,11 +79,13 @@ Run the managed installer, compare both installed files, then prove
 idempotence:
 
 ```bash
-ansible-playbook install_layout.yml && cmp files/us-nova ~/.config/xkb/symbols/us-nova && cmp files/evdev ~/.config/xkb/rules/evdev && ansible-playbook install_layout.yml
+ansible-playbook install_layout.yml && cmp files/us-nova ~/.config/xkb/symbols/us-nova && cmp files/evdev ~/.config/xkb/rules/evdev && test "$(gsettings get org.gnome.desktop.peripherals.keyboard remember-numlock-state)" = false && test "$(gsettings get org.gnome.desktop.peripherals.keyboard numlock-state)" = false && ansible-playbook install_layout.yml
 ```
 
-The first run may report the symbols file changed. The second run must report
-zero changes.
+The corrective first run may change `remember-numlock-state` and
+`numlock-state` from `true` to `false`. The second run must report zero
+changes. Both byte comparisons and both boolean assertions are silent on
+success.
 
 ## Reload boundary
 
@@ -89,6 +95,23 @@ convenient point, after all offline and deployment checks pass.
 
 Do not spend a session restart on a candidate that did not pass the offline
 proof.
+
+Changing the two GNOME booleans does not clear Mod2 from the already-running
+Mutter seat. Confirm both values are false, then perform one fresh login or
+reboot. On the next session Mutter will skip its raw-Mod2 NumLock restoration.
+
+## Known canary failure signature
+
+The first live deployment on 2026-07-26 produced:
+
+```text
+🐇 🐰 🥬 🥕 🐇 🐰 🥬 🥕
+```
+
+That exact repeated upper half means LevelFive was active before the physical
+hold. On MACE it coincided with both GNOME NumLock settings being `true`.
+Treat this as the compositor-state failure documented in ADR-0004, not as a
+symbol-order or QMK failure.
 
 ## Live physical acceptance
 
@@ -146,8 +169,8 @@ xkbcli interactive-wayland
 ## Acceptance receipt
 
 After the physical test succeeds, record the exact commit, MACE's xkbcommon
-version, offline proof result, session reload method, eight-symbol line, Caps
-line, and regression results in ADR-0004.
+version, offline proof result, both GNOME NumLock booleans, session reload
+method, eight-symbol line, Caps line, and regression results in ADR-0004.
 
 ## Rollback
 
