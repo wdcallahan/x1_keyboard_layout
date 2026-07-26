@@ -1,5 +1,5 @@
 // Nova custom 4-level layout for Lemokey X1
-// Transport profile: xkb-menu-meta-transport-v2.5 (2026-07-25)
+// Transport profile: xkb-menu-meta-transport-v2.6 (2026-07-25)
 // Decision record: docs/decisions/0002-separate-menu-meta-compose-transports.md
 // Based on master reference table + hardware remap (Caps/RAlt/Fn/Menu/RCtrl→F21–F24)
 // Drop this into an XKB symbols file (e.g. /etc/X11/xkb/symbols/nova)
@@ -28,9 +28,10 @@ xkb_symbols "base" {
     // --- Menu and Meta transports ---
     // KC_APP arrives as evdev 127 / <COMP>.
     // KC_MENU (USB HID usage 0x76) arrives as evdev 130 / <PROP>.
-    // Ordinary key declarations preserve stock Group1 and add Nova Group2.
-    // Raw Wayland/XKB and GTK see Meta_R on real Mod3 with semantic Meta.
-    key <COMP> {
+    // Meta must exist in both groups because kitty's Wayland modifier scanner
+    // starts from the initial group. Menu has its own dedicated <PROP> path.
+    replace key <COMP> {
+        [ Meta_R ],
         [ Meta_R ],
         virtualModifiers = Meta
     };
