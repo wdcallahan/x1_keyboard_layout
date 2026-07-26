@@ -1,8 +1,8 @@
 # Design: Nova Level5 locked-Mod2 sentinel
 
-- **Version:** 0.1.0
+- **Version:** 1.0.0
 - **Date:** 2026-07-26
-- **Status:** Staged prototype; MACE acceptance required
+- **Status:** Accepted; Ansible-managed on MACE
 - **Prototype UUID:** `nova-level5-sentinel@wdcallahan`
 - **Owner:** `wdcallahan/x1_keyboard_layout`
 
@@ -77,72 +77,51 @@ On the first fault in a session, the extension:
 The indicator remains until the extension or session is restarted. A fault is
 a stop condition, not a condition to hide automatically.
 
-## Staged deployment
+## Managed deployment
 
-The repository playbook installs the two prototype files under:
+The repository playbook installs both extension files under:
 
 ```text
 ~/.local/share/gnome-shell/extensions/nova-level5-sentinel@wdcallahan/
 ```
 
-It deliberately does not manage extension enablement yet. GNOME Shell caches
-extension code within a session, and this prototype must first prove both its
-fault and healthy behavior on MACE.
+It also preserves the user's existing `org.gnome.shell enabled-extensions`
+list and appends only the sentinel UUID when necessary. GNOME Shell caches
+extension discovery within a session, so a first installation may become active
+only after the next fresh login. The enabled intent already persists across that
+boundary.
 
-### Fault-state proof
+### MACE acceptance receipt
 
-The first Level5 canary session currently has Mod2 locked even after the stored
-GNOME booleans are corrected; changing dconf does not rewrite the already
-running Mutter seat. That makes it a useful live fault fixture.
+MACE completed the prevention, healthy-state, and alarm proofs on 2026-07-26:
 
-After installation, attempt explicit enablement:
+- after Ansible set both GNOME NumLock booleans to `false`, a reboot restored
+  ordinary B and all eight canary results exactly as
+  `b B β α 🐇 🐰 🥬 🥕`;
+- `gnome-extensions info` reported the sentinel `Enabled: Yes` and
+  `State: ACTIVE`;
+- live `wev` observation held I692/Mod2 effective for 13.398 seconds with
+  Mod2 only depressed, never latched or locked, and the sentinel correctly
+  remained silent;
+- changing only `numlock-state` to `true` raised the persistent top-bar
+  rabbit and the notification
+  `Unsafe GNOME NumLock policy: remember=false, state=true.`;
+- restoring both booleans to `false` and restarting the extension returned it
+  to a clean active state.
 
-```bash
-gnome-extensions enable nova-level5-sentinel@wdcallahan
-```
-
-If GNOME Shell has already discovered the newly installed directory, the top
-bar must show the rabbit fault within one second. If the CLI reports that the
-extension is unknown, do not improvise a loader: record the result and use the
-next fresh session for discovery.
-
-Inspect extension state with:
-
-```bash
-gnome-extensions info nova-level5-sentinel@wdcallahan
-```
-
-Inspect its log with:
-
-```bash
-journalctl --user -b --grep='Nova Level5 Sentinel' --no-pager
-```
-
-### Healthy-session proof
-
-After both GNOME booleans are false and the extension is enabled, start one
-fresh GNOME session. Required behavior:
-
-- no rabbit indicator or safety notification appears;
-- ordinary B produces `b`;
-- the physical Level5 hold produces `🐇`;
-- holding Level5 deliberately for more than two seconds does not alarm;
-- all eight B combinations remain correct;
-- the extension remains active and error-free.
-
-### Policy-alarm proof
-
-In a disposable session, changing either managed boolean to true must raise the
-alarm immediately. Restore both values to false before ending the session. This
-tests policy observation; it does not intentionally re-lock Mod2.
+The policy test changed a watched preference; it did not intentionally lock
+Mod2. Together these receipts prove that legitimate Level5 use is not a false
+positive and that a transient unsafe policy cannot disappear unnoticed.
 
 ## Acceptance boundary
 
-Only after both fault and healthy proofs pass may `install_layout.yml` manage
-the UUID as enabled. Until then the source files are managed, but enablement is
-an explicit test step.
+The fault, healthy-session, and policy-alarm proofs passed on MACE, so
+`install_layout.yml` now manages both the source files and persistent enabled
+membership. A fresh session remains the discovery boundary after first
+installation; enabled membership alone does not claim that an already-running
+Shell loaded newly created source.
 
-If the prototype errors, disable it with:
+If the extension errors, disable it with:
 
 ```bash
 gnome-extensions disable nova-level5-sentinel@wdcallahan
