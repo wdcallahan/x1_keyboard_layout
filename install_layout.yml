@@ -15,18 +15,20 @@
       register: current_sources
       changed_when: false
 
-    - name: Set GNOME input sources to Nova layout
+    - name: Set GNOME input sources to Nova layout only
       ansible.builtin.command:
         cmd: >
           gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us-nova')]"
-      when: "'us-nova' not in current_sources.stdout"
+      when: current_sources.stdout | trim != "[('xkb', 'us-nova')]"
       changed_when: true
-    - name: Verify Nova layout is active
+
+    - name: Verify Nova is the only GNOME input source
       ansible.builtin.command:
         cmd: gsettings get org.gnome.desktop.input-sources sources
       register: gsettings_sources
       changed_when: false
-      failed_when: "'us-nova' not in gsettings_sources.stdout"
+      failed_when: gsettings_sources.stdout | trim != "[('xkb', 'us-nova')]"
+
     - name: Ensure both Shifts toggle Caps Lock
       block:
         - name: Read current XKB options
