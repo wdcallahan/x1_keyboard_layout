@@ -10,6 +10,8 @@ This document freezes the interface between Nova's keyboard architecture and a
 future local dictation service. It does not put speech recognition inside the
 XKB repository and does not choose hardware that has not been inventoried.
 
+Every shell command is intentionally one physical line.
+
 ## User contract
 
 | Event | Required behavior |
