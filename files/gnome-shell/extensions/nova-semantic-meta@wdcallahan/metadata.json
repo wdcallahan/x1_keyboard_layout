@@ -1,0 +1,9 @@
+{
+  "uuid": "nova-semantic-meta@wdcallahan",
+  "name": "Nova Semantic Meta",
+  "description": "Consumes Nova Meta+D in Ptyxis and emits tmux's existing detach command.",
+  "shell-version": [
+    "50"
+  ],
+  "version": 1
+}

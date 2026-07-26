@@ -296,11 +296,31 @@ Meta should be treated as a real, intentional command modifier.
 
 The current transport is complete: the Any/Meta hold emits `KC_APP`, Linux/XKB names it `<COMP>`, and the Nova symbols file turns it into `Meta_R` with virtual Meta on real Mod3. Live Wayland inspection verified that state without conflating it with Alt or Super.
 
-Transport success and application consumption are separate. Ptyxis/VTE receiving Meta+F as plain `f` showed that an ordinary terminal does not automatically encode every desktop modifier into bytes. The [kitty keyboard protocol](https://sw.kovidgoyal.net/kitty/keyboard-protocol/) can distinguish Alt, Super, Hyper, and semantic Meta, while [tmux's documented command-key model](https://github.com/tmux/tmux/wiki/Modifier-Keys) still centers on Control, historical Meta (usually Alt), and Shift.
+Transport success and application consumption are separate. VTE is the
+terminal-emulation library inside Ptyxis, not a terminal standard. Ptyxis/VTE
+receiving Meta+F as plain `f` showed that an ordinary terminal does not
+automatically encode every desktop modifier into bytes.
+
+The [kitty keyboard protocol](https://sw.kovidgoyal.net/kitty/keyboard-protocol/)
+can distinguish Alt, Super, Hyper, and semantic Meta, but the protocol is only
+the terminal-to-application wire format. On MACE, kitty encoded Right Meta
+itself with the semantic Meta bit and then encoded the following F without it.
+Both daily Ptyxis and the protocol-aware kitty test therefore lost Mod3 before
+the ordinary-key event crossed the terminal byte boundary.
 
 Do not globally alias semantic Meta to Alt merely to satisfy a legacy terminal boundary. A consumer should either understand semantic Meta directly or use a deliberately narrow application/terminal adapter for the chosen chords.
 
-Meta+D remains a useful design goal because it is cleaner than multi-key prefix sequences such as Control+B then D. Super remains available for desktop/window-manager behavior; Meta remains the application command namespace. The first consumer and its boundary translation require a separate acceptance decision; `docs/runbooks/validate-semantic-meta-consumer.md` owns that proof.
+The first selected consumer is a GNOME Shell prototype for Meta+D under
+Ptyxis. Shell observes real Mod3, consumes only that D chord, waits until the
+physical keys are released, and uses the established `ydotool` path to emit
+tmux's existing Control+B, D sequence. Waiting for release prevents the
+synthetic D from recursively becoming another Meta+D while Meta is still down.
+
+Super remains available for desktop/window-manager behavior; Meta remains the
+application command namespace. The adapter is deliberately not a general
+terminal protocol or global modifier alias. Its design lives in
+`docs/designs/semantic-meta-ptyxis-adapter.md`, and
+`docs/runbooks/validate-semantic-meta-consumer.md` owns live acceptance.
 
 ---
 
@@ -582,6 +602,7 @@ Important GNOME/XKB state:
 | XKB options | Exactly `['shift:both_capslock']`. |
 | NumLock restoration | Both `remember-numlock-state` and `numlock-state` are `false`, preventing Mutter from pre-locking LevelFive's Mod2. |
 | Level5 sentinel | Managed GNOME Shell extension detects unexpected latched/locked Mod2, alerts without self-healing, and remains enabled across sessions. |
+| Semantic Meta adapter | Managed GNOME Shell prototype translates exact Meta+D in focused Ptyxis to tmux detach; live MACE acceptance is still required. |
 | Rules resolver | Managed `~/.config/xkb/rules/evdev`; it omits automatic `inet(evdev)` assembly. |
 | Obsolete extension | The former `nova:transports` option and `evdev.post` hook are removed. |
 | Stale option removed | `compose:ralt`, because there is no longer a physical Right Alt key used for Compose. |

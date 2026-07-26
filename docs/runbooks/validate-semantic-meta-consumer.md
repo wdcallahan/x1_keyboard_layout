@@ -1,8 +1,8 @@
 # Runbook: Validate semantic Meta at the consumer boundary
 
-- **Version:** 1.0.1
+- **Version:** 1.1.0
 - **Date:** 2026-07-26
-- **Status:** Prepared; consumer not yet selected
+- **Status:** Ptyxis/tmux adapter selected; prototype awaiting live acceptance
 - **Transport decision:** ADR-0003
 - **Authoritative branch:** `main`
 
@@ -87,6 +87,11 @@ Press Meta+F physically, then exit with Control+C. Record the bytes exactly.
 A plain `66` byte means the terminal sent ordinary `f`. That is a consumer
 boundary result, not a failed Meta transport.
 
+MACE produced plain input in Ptyxis 50.1 / VTE 0.84.0. A direct tmux check
+likewise showed that Control+B followed by D detached correctly, while Meta+D
+printed a literal `d`. That confirms both the existing tmux command and the
+consumer-boundary loss.
+
 ## Protocol-aware terminal proof
 
 If kitty is already installed, run this inside kitty:
@@ -99,13 +104,31 @@ Press Meta+F and record whether the event reports the distinct semantic `meta`
 modifier. Kitty's protocol defines separate bits for Alt, Super, Hyper, and
 Meta, so this test is intentionally different from legacy Escape-prefix Meta.
 
-Do not infer that tmux can bind the distinct bit merely because kitty can report
-it. Current tmux documentation describes Control, historical Meta (normally
-Alt), and Shift; its terminal boundary must be tested independently.
+MACE's kitty 0.47.1 trace encoded Right Meta itself as:
+
+```text
+CSI 57452 ; 33 u
+```
+
+The protocol modifier field is one plus a bit mask, and bit 32 is semantic
+Meta. The following F event nevertheless had an empty modifier field:
+
+```text
+CSI 102 ; ; ; 102 u
+```
+
+This is a precise rejection receipt. Kitty's wire protocol can represent Meta,
+but kitty's input frontend did not carry the depressed Mod3/Meta state onto the
+following F event. A richer terminal protocol cannot restore a modifier that
+was discarded before encoding.
+
+Do not infer that tmux can bind the distinct bit merely because a terminal can
+report it. Current tmux documentation describes Control, historical Meta
+(normally Alt), and Shift; its terminal boundary must be tested independently.
 
 ## Decision boundary
 
-Choose the first real consumer before changing configuration:
+The first real consumer has now been selected:
 
 | Consumer path | Meaning |
 | --- | --- |
@@ -118,10 +141,22 @@ The architecture rejects a global XKB alias from Meta to Alt. That experiment
 made the terminal boundary easier only by destroying the semantic distinction
 the keyboard was built to preserve.
 
+The selected prototype is
+`nova-semantic-meta@wdcallahan`, documented in
+`docs/designs/semantic-meta-ptyxis-adapter.md`. GNOME Shell sees real Mod3
+before Ptyxis discards it. The extension therefore consumes only exact Meta+D
+while Ptyxis is focused, waits until both D and Meta are released, and injects
+tmux's already accepted Control+B, D sequence through the established
+`ydotool` path.
+
+Waiting for release is a safety requirement. Injecting D while physical Meta
+remained depressed could make the extension recognize its own synthetic D and
+recurse.
+
 ## Smallest useful acceptance
 
-The first consumer should implement one reversible, unmistakable action. A good
-candidate remains Meta+D for tmux detach, but it is accepted only when:
+The first consumer implements one reversible, unmistakable action. Meta+D for
+tmux detach is accepted only when:
 
 - the action occurs with one simultaneous chord;
 - plain D does not leak into the terminal;
@@ -129,8 +164,45 @@ candidate remains Meta+D for tmux detach, but it is accepted only when:
 - the solution does not rename Meta as Alt globally;
 - behavior outside the intended consumer is understood.
 
+## Install the prototype
+
+From `~/src/x1_keyboard_layout`:
+
+```bash
+git status --short --branch && git pull --ff-only && git log -1 --oneline && ansible-playbook --syntax-check install_layout.yml && ansible-playbook install_layout.yml && cmp files/gnome-shell/extensions/nova-semantic-meta@wdcallahan/extension.js ~/.local/share/gnome-shell/extensions/nova-semantic-meta@wdcallahan/extension.js && cmp files/gnome-shell/extensions/nova-semantic-meta@wdcallahan/metadata.json ~/.local/share/gnome-shell/extensions/nova-semantic-meta@wdcallahan/metadata.json && ansible-playbook install_layout.yml
+```
+
+GNOME Shell may not discover a newly installed extension until the next fresh
+login session. Reboot or log out and back in before live acceptance.
+
+## Live acceptance
+
+After the fresh session:
+
+```bash
+gnome-extensions info nova-semantic-meta@wdcallahan
+```
+
+Required state is `Enabled: Yes` and `State: ACTIVE`.
+
+Open tmux in Ptyxis. Type a visible marker, then press physical Meta+D. The
+client must detach without inserting D. Reattach and verify plain D, Alt+D,
+Super+D, Level3+D, and Level5+D retain their prior meanings.
+
+The extension acts only while Ptyxis is focused. Meta+D in another application
+must not be consumed. Ptyxis tabs that are not running tmux remain a documented
+limitation: they receive the ordinary terminal effects of Control+B followed by
+D.
+
+Emergency rollback is immediate:
+
+```bash
+gnome-extensions disable nova-semantic-meta@wdcallahan
+```
+
 ## References
 
 - Kitty keyboard protocol: <https://sw.kovidgoyal.net/kitty/keyboard-protocol/>
 - tmux modifier documentation: <https://github.com/tmux/tmux/wiki/Modifier-Keys>
 - tmux manual extended keys: <https://man.openbsd.org/tmux.1>
+- Adapter design: `docs/designs/semantic-meta-ptyxis-adapter.md`
