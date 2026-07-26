@@ -1,6 +1,6 @@
 # Runbook: Validate semantic Meta at the consumer boundary
 
-- **Version:** 1.1.0
+- **Version:** 1.1.1
 - **Date:** 2026-07-26
 - **Status:** Ptyxis/tmux adapter selected; prototype awaiting live acceptance
 - **Transport decision:** ADR-0003
@@ -144,14 +144,21 @@ the keyboard was built to preserve.
 The selected prototype is
 `nova-semantic-meta@wdcallahan`, documented in
 `docs/designs/semantic-meta-ptyxis-adapter.md`. GNOME Shell sees real Mod3
-before Ptyxis discards it. The extension therefore consumes only exact Meta+D
-while Ptyxis is focused, waits until both D and Meta are released, and injects
-tmux's already accepted Control+B, D sequence through the established
-`ydotool` path.
+and the explicit `Meta_R` key lifecycle before Ptyxis discards the modifier.
+The extension therefore consumes Meta+D only while Ptyxis is focused, waits
+until both D and Meta are released, and injects tmux's already accepted
+Control+B, D sequence through the established `ydotool` path.
 
 Waiting for release is a safety requirement. Injecting D while physical Meta
 remained depressed could make the extension recognize its own synthetic D and
 recurse.
+
+Version 1 loaded and reported `ACTIVE`, but Meta+D still printed `d`. The
+installed Window Calls extension identified the focused window as
+`org.gnome.Ptyxis`, exposing a brittle first-pass check that required only
+`org.gnome.Ptyxis.desktop`. Version 2 recognizes Ptyxis through the Shell
+application ID, GTK application ID, WM class, or WM class instance and tracks
+the concrete `Meta_R` press/release events already proven at Wayland.
 
 ## Smallest useful acceptance
 

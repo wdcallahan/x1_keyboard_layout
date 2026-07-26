@@ -311,7 +311,8 @@ the ordinary-key event crossed the terminal byte boundary.
 Do not globally alias semantic Meta to Alt merely to satisfy a legacy terminal boundary. A consumer should either understand semantic Meta directly or use a deliberately narrow application/terminal adapter for the chosen chords.
 
 The first selected consumer is a GNOME Shell prototype for Meta+D under
-Ptyxis. Shell observes real Mod3, consumes only that D chord, waits until the
+Ptyxis. Shell tracks the explicit `Meta_R` press/release lifecycle before the
+terminal boundary, consumes only the corresponding D chord, waits until the
 physical keys are released, and uses the established `ydotool` path to emit
 tmux's existing Control+B, D sequence. Waiting for release prevents the
 synthetic D from recursively becoming another Meta+D while Meta is still down.

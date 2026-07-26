@@ -6,15 +6,10 @@ import Shell from 'gi://Shell';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-const META_MASK = Clutter.ModifierType.MOD3_MASK;
-const OTHER_CHORD_MASK =
-    Clutter.ModifierType.SHIFT_MASK |
-    Clutter.ModifierType.CONTROL_MASK |
-    Clutter.ModifierType.MOD1_MASK |
-    Clutter.ModifierType.MOD2_MASK |
-    Clutter.ModifierType.MOD4_MASK |
-    Clutter.ModifierType.MOD5_MASK;
-const PTYXIS_APP_ID = 'org.gnome.Ptyxis.desktop';
+const PTYXIS_IDS = new Set([
+    'org.gnome.Ptyxis',
+    'app.devsuite.Ptyxis',
+]);
 const RELEASE_POLL_MS = 10;
 
 // Linux input-event-codes.h:
@@ -32,6 +27,7 @@ const TMUX_DETACH_SEQUENCE = [
 export default class NovaSemanticMeta extends Extension {
     enable() {
         this._faulted = false;
+        this._metaKeyDown = false;
         this._pendingDetach = false;
         this._swallowD = false;
         this._swallowedKeyCode = 0;
@@ -57,6 +53,13 @@ export default class NovaSemanticMeta extends Extension {
         const keyCode = event.get_key_code();
         const isD = symbol === Clutter.KEY_d || symbol === Clutter.KEY_D;
 
+        if (symbol === Clutter.KEY_Meta_R) {
+            this._metaKeyDown = type === Clutter.EventType.KEY_PRESS;
+            if (!this._metaKeyDown)
+                this._armReleasePoll();
+            return Clutter.EVENT_PROPAGATE;
+        }
+
         // Once this physical D press has been claimed, consume its repeats and
         // release even if Meta is released first.
         if (this._swallowD && keyCode === this._swallowedKeyCode) {
@@ -70,38 +73,46 @@ export default class NovaSemanticMeta extends Extension {
         }
 
         if (type !== Clutter.EventType.KEY_PRESS || !isD ||
-            !this._isPtyxisFocused())
+            !this._metaKeyDown)
             return Clutter.EVENT_PROPAGATE;
 
-        let pressed;
-        let latched;
-        let locked;
-        try {
-            [pressed, latched, locked] = event.get_key_state();
-        } catch (error) {
-            this._raiseFault(`Could not inspect Meta+D state: ${error.message}`);
+        const focus = this._getFocusIdentity();
+        if (!focus.isPtyxis) {
+            console.log(
+                `Nova Semantic Meta: ignored Meta+D outside Ptyxis: ${JSON.stringify(focus)}.`);
             return Clutter.EVENT_PROPAGATE;
         }
-
-        const effective = pressed | latched | locked;
-        const isExactPhysicalMetaD =
-            (pressed & META_MASK) !== 0 &&
-            (effective & OTHER_CHORD_MASK) === 0;
-
-        if (!isExactPhysicalMetaD)
-            return Clutter.EVENT_PROPAGATE;
 
         this._pendingDetach = true;
         this._swallowD = true;
         this._swallowedKeyCode = keyCode;
+        console.log(
+            `Nova Semantic Meta: claimed Meta+D in ${JSON.stringify(focus)}.`);
         this._armReleasePoll();
         return Clutter.EVENT_STOP;
     }
 
-    _isPtyxisFocused() {
+    _getFocusIdentity() {
         const window = global.display.focus_window;
         const app = window ? this._windowTracker.get_window_app(window) : null;
-        return app?.get_id() === PTYXIS_APP_ID;
+        const appId = app?.get_id?.() ?? null;
+        const gtkApplicationId = window?.get_gtk_application_id?.() ?? null;
+        const wmClass = window?.get_wm_class?.() ?? null;
+        const wmClassInstance = window?.get_wm_class_instance?.() ?? null;
+        const identities = [
+            appId,
+            gtkApplicationId,
+            wmClass,
+            wmClassInstance,
+        ].map(identity => identity?.replace(/\.desktop$/, '') ?? null);
+
+        return {
+            appId,
+            gtkApplicationId,
+            wmClass,
+            wmClassInstance,
+            isPtyxis: identities.some(identity => PTYXIS_IDS.has(identity)),
+        };
     }
 
     _armReleasePoll() {
@@ -117,8 +128,7 @@ export default class NovaSemanticMeta extends Extension {
                     return GLib.SOURCE_REMOVE;
                 }
 
-                const [, , modifiers] = global.get_pointer();
-                if (this._swallowD || (modifiers & META_MASK) !== 0)
+                if (this._swallowD || this._metaKeyDown)
                     return GLib.SOURCE_CONTINUE;
 
                 this._pendingDetach = false;
@@ -129,9 +139,10 @@ export default class NovaSemanticMeta extends Extension {
     }
 
     _injectTmuxDetach() {
-        if (!this._isPtyxisFocused()) {
+        const focus = this._getFocusIdentity();
+        if (!focus.isPtyxis) {
             console.warn(
-                'Nova Semantic Meta: focus left Ptyxis before Meta+D completed; injection canceled.');
+                `Nova Semantic Meta: focus left Ptyxis before Meta+D completed; injection canceled: ${JSON.stringify(focus)}.`);
             return;
         }
 
@@ -152,7 +163,8 @@ export default class NovaSemanticMeta extends Extension {
                     if (!source.get_successful()) {
                         const detail = stderr?.trim() || 'ydotool exited unsuccessfully.';
                         this._raiseFault(`Could not inject tmux detach: ${detail}`);
-                    }
+                    } else
+                        console.log('Nova Semantic Meta: injected tmux detach sequence.');
                 } catch (error) {
                     this._raiseFault(`Could not finish tmux detach: ${error.message}`);
                 }
@@ -182,6 +194,7 @@ export default class NovaSemanticMeta extends Extension {
             this._stageSignal = 0;
         }
 
+        this._metaKeyDown = false;
         this._pendingDetach = false;
         this._swallowD = false;
         this._swallowedKeyCode = 0;
