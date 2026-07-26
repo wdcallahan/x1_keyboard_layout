@@ -14,6 +14,12 @@ The purpose of this document is to answer the question:
 
 The intended reader is future Nova, or someone comfortable enough with Linux keyboard plumbing to recreate this architecture on a new machine, a new keyboard, or a new software stack.
 
+For a readable whole-system tour, start with
+[`nova-keyboard-input-architecture.md`](nova-keyboard-input-architecture.md).
+For the exact direct-character inventory and placement doctrine, see
+[`symbol-vocabulary.md`](symbol-vocabulary.md). This document remains the
+technical statement of current behavior and accepted boundaries.
+
 ---
 
 ## 1. Core design principle
@@ -126,14 +132,19 @@ The keyboard system currently spans more than one repository by design.
 | Repository | Responsibility |
 | --- | --- |
 | `x1_keyboard_layout` | Host-side XKB symbols, GNOME input options, layout installation. |
-| `qmk_keychron` / `lemokey-x2-qmk` branch | Keyboard firmware, physical matrix behavior, deterministic tap-hold logic, flashing. |
+| `lemokey-x2-qmk` branch `nova/x2-baseline` | Keyboard firmware, physical matrix behavior, deterministic tap-hold logic, pointer layers and lamp, flashing. |
 | `press-the-any-key` | GNOME/Wayland Any key shortcut and `ydotool` injection path. |
 | `hyperkeyd` | Experimental Hyper command dispatcher daemon. Not production-critical yet. |
-| Future Whisper/PTT project | Speech-to-text hold-to-record trigger, expected to bind to the Whisper key. |
+| Prepared Whisper/PTT project | The design boundary is documented; no recording/transcription service or implementation repository exists yet. |
 
 Do not merge the QMK firmware repo with the XKB/layout repo merely because both are about the keyboard. Firmware identity and host meaning are intentionally separate.
 
 The better integration point is documentation: each repo should point to this architecture document and to the other relevant repos.
+
+This repository is the canonical documentation hub. The guided tour lives at
+`docs/nova-keyboard-input-architecture.md`, and the symbol companion lives at
+`docs/symbol-vocabulary.md`. Their ChatGPT Library copies are reading and
+sharing mirrors rather than independent authorities.
 
 ---
 
@@ -559,7 +570,7 @@ Some special functions are not ordinary modifiers or text input. They are host-s
 | Trigger | Current identity | Intended role |
 | --- | --- | --- |
 | Any | `PB_26` / `XF86Macro26` / `<I689>` | GNOME shortcut launches the Any key program. |
-| Whisper/PTT | `PB_28` / `XF86Macro28` / `<I691>` | Future hold-to-record speech-to-text trigger. |
+| Whisper/PTT | `PB_28` / `XF86Macro28` / `<I691>` | Prepared hold-to-record speech-to-text trigger; no service exists yet. |
 | Hyper | `PB_11` / `XF86Macro11` / `<I674>` | Command launcher mode trigger. |
 
 These should use programmable-button identities rather than function keys or media keys.
