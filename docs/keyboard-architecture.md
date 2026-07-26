@@ -398,7 +398,21 @@ It does not toggle host NumLock state.
 It toggles the keyboard's mouse layer.
 
 The host `<NMLK>` keycode is one-level `VoidSymbol` and has no real modifier
-mapping, so even an unexpected host-side NumLock event cannot engage NumLock.
+mapping, so even an unexpected physical NumLock event cannot engage NumLock.
+
+That event suppression does not cover GNOME's saved session state. Mutter
+restores remembered NumLock by locking raw Mod2 directly; Nova assigns Mod2 to
+LevelFive. The installer therefore manages both
+`remember-numlock-state=false` and `numlock-state=false`. A daemon or watchdog
+must never clear Mod2 at runtime, because it could not distinguish stale
+NumLock from an intentional Level5 hold.
+
+The complete prevention model is source elimination:
+
+1. QMK emits no NumLock event and uses the lamp only as a layer indicator.
+2. XKB makes `<NMLK>` void and removes `Num_Lock` from modifier maps.
+3. GNOME is prevented from restoring remembered NumLock into raw Mod2.
+4. The playbook verifies all managed state before a fresh session is accepted.
 
 The keypad should always remain numeric. This preserves muscle memory and avoids the classic NumLock problem where the keypad unpredictably changes between numbers and navigation.
 
@@ -559,11 +573,12 @@ Important GNOME/XKB state:
 | --- | --- |
 | Input sources | Exactly `[('xkb', 'us-nova')]`; Nova is the sole source and sole XKB group. |
 | XKB options | Exactly `['shift:both_capslock']`. |
+| NumLock restoration | Both `remember-numlock-state` and `numlock-state` are `false`, preventing Mutter from pre-locking LevelFive's Mod2. |
 | Rules resolver | Managed `~/.config/xkb/rules/evdev`; it omits automatic `inet(evdev)` assembly. |
 | Obsolete extension | The former `nova:transports` option and `evdev.post` hook are removed. |
 | Stale option removed | `compose:ralt`, because there is no longer a physical Right Alt key used for Compose. |
 
-After changing the installed symbols file, GNOME may not reload the keymap immediately. A logout/login may be needed. The file being installed correctly does not guarantee the current Wayland session has rebuilt its active keymap.
+After changing the installed symbols file or the NumLock compatibility policy, GNOME may not rebuild the active seat immediately. A logout/login or reboot is required. Installed files and false/false settings do not prove that an already-running Wayland session has cleared a previously locked Mod2 state.
 
 Useful verification command:
 
