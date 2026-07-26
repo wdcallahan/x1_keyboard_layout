@@ -414,11 +414,12 @@ The complete prevention model is source elimination:
 3. GNOME is prevented from restoring remembered NumLock into raw Mod2.
 4. The playbook verifies all managed state before a fresh session is accepted.
 
-Prevention is paired with a staged GNOME Shell sentinel. It observes the live
-outcome: depressed Mod2 is a legitimate physical Level5 hold, while latched or
-locked Mod2 is a safety fault. The sentinel alerts with a persistent top-bar
-rabbit and notification but never clears modifiers. Its design and acceptance
-boundary live in `docs/designs/level5-mod2-sentinel.md`.
+Prevention is paired with an accepted, Ansible-managed GNOME Shell sentinel.
+It observes the live outcome: depressed Mod2 is a legitimate physical Level5
+hold, while latched or locked Mod2 is a safety fault. The sentinel alerts with
+a persistent top-bar rabbit and notification but never clears modifiers. Its
+design and MACE acceptance receipt live in
+`docs/designs/level5-mod2-sentinel.md`.
 
 The keypad should always remain numeric. This preserves muscle memory and avoids the classic NumLock problem where the keypad unpredictably changes between numbers and navigation.
 
@@ -580,7 +581,7 @@ Important GNOME/XKB state:
 | Input sources | Exactly `[('xkb', 'us-nova')]`; Nova is the sole source and sole XKB group. |
 | XKB options | Exactly `['shift:both_capslock']`. |
 | NumLock restoration | Both `remember-numlock-state` and `numlock-state` are `false`, preventing Mutter from pre-locking LevelFive's Mod2. |
-| Level5 sentinel | Staged GNOME Shell extension detects unexpected latched/locked Mod2 and alerts without self-healing. |
+| Level5 sentinel | Managed GNOME Shell extension detects unexpected latched/locked Mod2, alerts without self-healing, and remains enabled across sessions. |
 | Rules resolver | Managed `~/.config/xkb/rules/evdev`; it omits automatic `inet(evdev)` assembly. |
 | Obsolete extension | The former `nova:transports` option and `evdev.post` hook are removed. |
 | Stale option removed | `compose:ralt`, because there is no longer a physical Right Alt key used for Compose. |
