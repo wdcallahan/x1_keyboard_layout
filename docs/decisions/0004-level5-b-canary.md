@@ -1,8 +1,8 @@
 # ADR-0004: Populate B as the first eight-level Level5 canary
 
-- **Version:** 1.3.0
+- **Version:** 2.0.0
 - **Date:** 2026-07-26
-- **Status:** Corrective policy and sentinel proof pending
+- **Status:** Accepted; live Level5 and sentinel proofs passed
 - **Behavior label:** `nova-level5-b-canary-2026-07-26`
 - **Depends on:** ADR-0003 / `nova-single-group-keypad-2026-07-26`
 - **Validation runbook:** `docs/runbooks/validate-level5-b-canary.md`
@@ -155,17 +155,35 @@ remember-numlock-state = false
 numlock-state          = false
 ```
 
-Repository commit `4264de0` adds that policy to `install_layout.yml`. A fresh
-session and the original physical acceptance suite remain required.
-
-Prevention alone is not treated as proof against every future producer. A
-read-only GNOME Shell sentinel is staged under
+Repository commit `4264de0` added that policy to `install_layout.yml`.
+Prevention alone is not treated as proof against every future producer, so the
+repository also carries a read-only GNOME Shell sentinel under
 `files/gnome-shell/extensions/nova-level5-sentinel@wdcallahan`. It distinguishes
 depressed Mod2 from latched/locked Mod2, watches the two policy booleans, and
-raises a persistent rabbit alarm without changing modifier state. Its fault and
-healthy-session tests are defined in
-`docs/designs/level5-mod2-sentinel.md`; automatic enablement remains pending
-those MACE proofs.
+raises a persistent rabbit alarm without changing modifier state.
+
+## Corrective live acceptance
+
+MACE completed the corrective acceptance on 2026-07-26:
+
+- Ansible managed both GNOME NumLock booleans as `false` and proved a
+  zero-change second run;
+- after reboot, ordinary B returned `b` and the complete physical canary
+  produced exactly `b B β α 🐇 🐰 🥬 🥕`;
+- the sentinel loaded as `Enabled: Yes` and `State: ACTIVE`;
+- a deterministic Level5 chord left I692/Mod2 depressed for 13.398 seconds
+  while `latched` and `locked` remained zero, and no false alarm appeared;
+- temporarily changing only `numlock-state` to `true` produced both the
+  persistent top-bar rabbit and the notification
+  `Unsafe GNOME NumLock policy: remember=false, state=true.`;
+- restoring both booleans to `false` and restarting the extension returned it
+  to a clean active state.
+
+The policy test did not lock Mod2; it proved the alert path independently of
+the modifier. The reboot and eight-symbol line proved the actual corrective
+path. The prevention, healthy-session, and alarm boundaries are therefore all
+accepted. `install_layout.yml` now preserves existing GNOME Shell extensions
+while managing the sentinel UUID as enabled.
 
 ## Consequences
 
