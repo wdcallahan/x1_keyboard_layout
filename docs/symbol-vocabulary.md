@@ -67,7 +67,7 @@ The system has more than one source of truth because different layers own differ
 | Firmware | QMK keymap | Physical matrix behavior, programmable-button identities, deterministic tap-hold behavior, mouse layer. |
 | Hyper | `hyperkeyd` | Hyper as a personal command-dispatch plane. |
 | Any | `press-the-any-key` | Wayland-safe synthetic input and GNOME shortcut plumbing for the Any key. |
-| Whisper | `docs/designs/whisper-ptt-boundary.md` until an implementation repository exists | Prepared hold-to-record speech-to-text boundary; not a running service yet. |
+| Whisper | `whisper-ptt` implementation plus `docs/designs/whisper-ptt-boundary.md` | Active hold-to-record, release-to-finalize local speech-to-text plane. |
 
 This document should not duplicate the implementation details of those projects. It may mention them only when necessary to explain where the symbol layout ends and other input planes begin.
 

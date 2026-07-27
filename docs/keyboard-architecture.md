@@ -135,7 +135,7 @@ The keyboard system currently spans more than one repository by design.
 | `lemokey-x2-qmk` branch `nova/x2-baseline` | Keyboard firmware, physical matrix behavior, deterministic tap-hold logic, pointer layers and lamp, flashing. |
 | `press-the-any-key` | GNOME/Wayland Any key shortcut and `ydotool` injection path. |
 | `hyperkeyd` | Experimental Hyper command dispatcher daemon. Not production-critical yet. |
-| Prepared Whisper/PTT project | The design boundary is documented; no recording/transcription service or implementation repository exists yet. |
+| `whisper-ptt` | Accepted local release-to-finalize dictation: direct `KEY_MACRO28` listener, exact PipeWire source, CPU `base.en`, focus audit, notifications, and `ydotool` insertion. |
 
 Do not merge the QMK firmware repo with the XKB/layout repo merely because both are about the keyboard. Firmware identity and host meaning are intentionally separate.
 
@@ -193,7 +193,7 @@ The current full-size prototype places the special right-side cluster like this,
 
 The reason for this arrangement is ergonomic rather than aesthetic.
 
-Whisper is expected to become high-frequency once working, so it receives a high-honor tactile position near the spacebar. Control, Meta, and Shift sometimes need to participate in a three-key command chord, so Control and Meta remain contiguous near the right Shift area. Compose and AltGr remain on an outside feelable edge, with AltGr still close enough to Shift for Level4 typing.
+Whisper became a high-frequency control as soon as its service was accepted, validating its high-honor tactile position near the spacebar. Control, Meta, and Shift sometimes need to participate in a three-key command chord, so Control and Meta remain contiguous near the right Shift area. Compose and AltGr remain on an outside feelable edge, with AltGr still close enough to Shift for Level4 typing.
 
 This layout was chosen after the previous placement made a real chord uncomfortable during normal use.
 
@@ -570,7 +570,7 @@ Some special functions are not ordinary modifiers or text input. They are host-s
 | Trigger | Current identity | Intended role |
 | --- | --- | --- |
 | Any | `PB_26` / `XF86Macro26` / `<I689>` | GNOME shortcut launches the Any key program. |
-| Whisper/PTT | `PB_28` / `XF86Macro28` / `<I691>` | Prepared hold-to-record speech-to-text trigger; no service exists yet. |
+| Whisper/PTT | `PB_28` / `XF86Macro28` / `<I691>` | Active hold-to-record, release-to-finalize local speech-to-text trigger. |
 | Hyper | `PB_11` / `XF86Macro11` / `<I674>` | Command launcher mode trigger. |
 
 These should use programmable-button identities rather than function keys or media keys.
@@ -579,13 +579,32 @@ That way host-side listeners can bind to clean events such as `KEY_MACRO28` inst
 
 The current Any key implementation lives in the `press-the-any-key` project. It binds GNOME to `XF86Macro26` and injects random alphanumeric characters through the Wayland-safe `ydotool` path.
 
-The Whisper/PTT trigger is planned but separate. It should not be conflated with the old STT binding.
+The Whisper/PTT implementation lives in
+[`wdcallahan/whisper-ptt`](https://github.com/wdcallahan/whisper-ptt). It is
+separate from this XKB repository and from the old IBus STT experiment.
 
-The intended local pipeline is press PB28 to begin a PipeWire capture, release PB28 to stop it, transcribe the resulting 16-bit mono WAV with a local model, and inject the finished text at the cursor through the established Wayland-safe input path. The listener should use the direct `KEY_MACRO28` press/release identity and should not grab or reinterpret ordinary typing keys.
+The active pipeline listens without a grab on the stable Lemokey Consumer
+Control by-ID interface. Pressing PB28 captures the focused GNOME window and
+begins an exact-source PipeWire recording. Release finalizes a 16 kHz mono
+signed-16 WAV, runs the verified English `base.en` model locally on six CPU
+threads, checks focus, and inserts the reviewed ASCII result through
+`ydotool`. It never presses Enter or another submission key.
 
-Microphone selection must be configurable by stable PipeWire node name so a dedicated dictation microphone can coexist with Zoom or BigBlueButton. The future service should expose at least idle, recording, transcribing, and error states; the exact persistent indicator belongs to that project.
+MACE uses the serial-bearing RØDE NT-USB Mini PipeWire node and never falls back
+to a webcam microphone. Replaceable desktop notifications expose Recording,
+Transcribing, Ready, non-speech, busy, and attention-required outcomes.
+Annotation-only results such as `[BLANK_AUDIO]` become notifications rather
+than keystrokes.
 
-[Fedora 44 packages `whisper-cpp`](https://packages.fedoraproject.org/pkgs/whisper-cpp/whisper-cpp/) and [`python3-pywhispercpp`](https://packages.fedoraproject.org/pkgs/pywhispercpp/python3-pywhispercpp/), so the leading first benchmark is a direct host install rather than a container. CPU inference can prove the complete press/release pipeline before GPU dependencies are introduced. If measured release-to-text latency is not acceptable, the next benchmark is a direct CUDA-enabled `whisper.cpp` build, with its official CUDA container available only as an isolation check. The nonfunctional IBus speech-to-text front end is a separate integration result and does not by itself reject the underlying engine. `faster-whisper` remains a comparison candidate, but its current GPU path requires CUDA 12 and cuDNN 9; the state of MACE's older Whisper container and current NVIDIA stack must be inventoried rather than assumed. Engine choice remains a benchmark decision, not a keyboard transport decision. `docs/designs/whisper-ptt-boundary.md` owns the prepared state machine, inventory, prototype phases, and acceptance contract.
+The packaged `python3-pywhispercpp` CPU path transcribed the accepted
+five-second proof in 0.787 seconds, so no CUDA stack was added. The service is
+enabled and active after reboot, and an unchanged Ansible deployment neither
+reports a change nor restarts it. The pre-injection focus check blocks a
+mismatch; the post-injection audit warns honestly when already-emitted
+characters may have followed a focus change because `ydotool` is not
+target-bound. `docs/designs/whisper-ptt-boundary.md` records the original
+boundary and accepted result; the implementation repository owns runtime
+details and its reproducible acceptance runbook.
 
 ---
 
@@ -657,6 +676,8 @@ Acceptance checks:
 | Any key repeated | Random alphanumeric output from Any program. |
 | Meta hold + key | `Meta_R` / Mod3 visible in `xkbcli`. |
 | Meta+D in Ptyxis/tmux | Detach exactly once; no D leaks. |
+| Whisper hold, speak, release | Local text appears once without Enter; notifications show recording and transcription progress. |
+| Whisper tap/silence | No text; an informational notification reports too-short, empty, or annotation-only input. |
 | Level5 hold + B | `🐇`. |
 | Shift+Level5 hold + B | `🐰`. |
 | Level3+Level5 hold + B | `🥬`. |

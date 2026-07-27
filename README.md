@@ -19,7 +19,7 @@ projects because they operate at different layers.
 | Level5 safety | GNOME NumLock restoration is disabled and the managed sentinel alerts on unexpected latched or locked Mod2. |
 | Meta transport | Active as `KC_APP` → `<COMP>` → `Meta_R` / Mod3. |
 | Meta consumption | Native Bash Readline Meta+D is proven in xterm. Ptyxis/VTE discards Mod3; the accepted adapter handles only Meta+D → tmux detach. General Bash Meta in Ptyxis is not implemented. |
-| Whisper/PTT | Physical `PB_28` transport and design boundary are prepared. No recording/transcription service exists yet. |
+| Whisper/PTT | Active as `PB_28` → `KEY_MACRO28` → local RØDE capture → CPU `base.en` → reviewed `ydotool` insertion. The persistent service, notifications, annotation suppression, and focus audit are accepted on MACE. |
 
 “Transport active” and “every application consumes it” are deliberately not
 treated as the same claim.
@@ -47,6 +47,8 @@ reading and sharing. The repository copies are canonical.
   — Any Key GNOME shortcut and `ydotool` injection path.
 - [`wdcallahan/hyperkeyd`](https://github.com/wdcallahan/hyperkeyd)
   — experimental passive Hyper command dispatcher.
+- [`wdcallahan/whisper-ptt`](https://github.com/wdcallahan/whisper-ptt)
+  — accepted local release-to-finalize Whisper dictation service.
 
 ## Install
 

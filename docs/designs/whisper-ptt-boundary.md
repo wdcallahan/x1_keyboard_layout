@@ -2,13 +2,14 @@
 
 - **Version:** 0.1.0
 - **Date:** 2026-07-26
-- **Status:** Prepared; implementation repository not yet created
+- **Status:** Implemented and accepted on MACE
 - **Keyboard identity:** `PB_28` / `KEY_MACRO28` / `XF86Macro28` / `<I691>`
-- **Owning implementation:** future dedicated Whisper/PTT repository
+- **Owning implementation:** [`wdcallahan/whisper-ptt`](https://github.com/wdcallahan/whisper-ptt)
 
-This document freezes the interface between Nova's keyboard architecture and a
-future local dictation service. It does not put speech recognition inside the
-XKB repository and does not choose hardware that has not been inventoried.
+This document freezes the interface between Nova's keyboard architecture and
+the local dictation service. It does not put speech recognition inside the XKB
+repository. The implementation fulfilled the prepared interface without
+changing the firmware identity.
 
 Every shell command is intentionally one physical line.
 
@@ -19,8 +20,8 @@ Every shell command is intentionally one physical line.
 | Whisper press | Begin recording immediately and show an unmistakable recording state. |
 | Whisper held | Continue recording without key repeat changing state. |
 | Whisper release | Stop recording, show transcribing state, transcribe locally, then insert the final text at the current cursor. |
-| Empty or too-short utterance | Insert nothing and return to idle. |
-| Failure | Insert nothing, show an error state, preserve the audio/log needed to diagnose it. |
+| Empty or too-short utterance | Insert nothing, return to idle, and show an informational notification. |
+| Failure | Show an attention state and preserve the audio/log needed to diagnose it. Failures before injection emit nothing; a detected focus change during injection may have emitted characters already. |
 | New press while busy | Reject clearly or queue by an explicit policy; never start overlapping inference silently. |
 
 The key is a direct programmable-button identity, not a tap-hold key and not a
@@ -51,42 +52,49 @@ command-dictation mode.
 Repeated press events while already Recording are ignored. A release without a
 matching press is logged and ignored.
 
-## Proposed component boundary
+## Accepted component boundary
 
-| Component | First implementation |
+| Component | Accepted implementation |
 | --- | --- |
-| Key listener | Narrow evdev listener filtered to `KEY_MACRO28`. |
-| Recorder | Host `pw-record`, 16 kHz, mono, signed 16-bit WAV, explicit `--target=node.name`. |
-| ASR | Fedora's direct-host `whisper-cpp` package for the first CPU benchmark. |
-| Model | Small English model initially; model path and name are variables. |
-| Text normalization | Trim model framing, reject empty output, preserve intended punctuation, apply only documented transformations. |
-| Injection | Reuse the established Wayland-safe ydotool/ydotoold path for the ASCII-first proof; test Unicode and clipboard-preservation behavior before claiming general text support. |
-| Service | systemd user unit with journal logs and restart policy. |
-| Indicator | At minimum distinct Idle, Recording, Transcribing, and Error feedback; exact persistent UI selected after prototype. |
-| Deployment | Dedicated Ansible playbook/role in the future project. |
+| Key listener | Narrow, non-grabbing evdev listener on the stable Lemokey Consumer Control by-ID path, filtered to `KEY_MACRO28`. |
+| Recorder | Host `pw-record`, 16 kHz, mono, signed 16-bit WAV, exact serial-bearing RØDE `node.name`. |
+| ASR | Fedora `python3-pywhispercpp`, six CPU threads. |
+| Model | Verified official English `base.en`, pinned by byte count and SHA-256. |
+| Text normalization | Collapse whitespace, map documented smart punctuation to ASCII, append one inter-utterance space, and suppress annotation-only results as notifications. |
+| Injection | `ydotool type --file=- --escape=0`; ASCII-first, no shell evaluation, Enter, or submission key. |
+| Focus safety | Window Calls captures GNOME focus; pre-injection mismatch blocks output and post-injection mismatch warns that emitted text may span windows. |
+| Service | Persistent systemd user unit with bounded restart policy, journal logs, atomic state, and retained failure evidence. |
+| Indicator | Replaceable desktop notifications for Recording, Transcribing, Ready, non-speech, busy, and attention-required outcomes. |
+| Deployment | Dedicated idempotent Ansible role in `whisper-ptt`; managed changes restart through handlers, while a no-op run leaves the PID unchanged. |
 
 PipeWire's recorder accepts a stable target node name and produces WAV based on
 the filename. `whisper.cpp` accepts file input and supports CPU and NVIDIA GPU
 paths. Those interfaces fit release-to-finalize dictation without adopting its
 continuous microphone demo.
 
-## Why CPU proof comes first
+## Why CPU remained sufficient
 
-Fedora 44 packages `whisper-cpp` 1.8.x and `python3-pywhispercpp`. A packaged
-CPU run is the shortest reproducible path for proving recording, model loading,
-transcription quality, output parsing, and cursor injection.
+Fedora 44's packaged `python3-pywhispercpp` 1.4 binding was the shortest
+reproducible path for proving recording, model loading, transcription quality,
+output parsing, and cursor injection.
 
-Only measured release-to-text latency determines whether GPU acceleration is
-needed. If CPU latency is unacceptable, benchmark a direct CUDA-enabled
-`whisper.cpp` build. Keep `faster-whisper` as a comparison candidate, noting
-that its current GPU requirements are CUDA 12 plus cuDNN 9.
+The accepted five-second proof transcribed in 0.787 seconds on six Ryzen 5
+5600G threads. That inference result, together with the accepted end-to-end
+responsiveness, did not justify adding a CUDA compiler, GPU-specific Whisper
+build, or container.
 
-This ordering avoids entangling the service contract with uncertain historical
-facts about MACE's older Whisper container or current NVIDIA stack.
+Acceleration remains a measured future optimization rather than part of the
+service contract.
 
-## Host inventory
+## Recorded host inventory
 
-Run this before installing or creating the implementation repository:
+The pre-implementation inventory established Fedora 44, GNOME 50 Wayland, the
+Ryzen 5 5600G, 42 GiB RAM, an RTX 2060 left unused, packaged
+`python3-pywhispercpp` 1.4, PipeWire 1.6.8, active `ydotoold`, the serial-bearing
+RØDE source, and the Lemokey Consumer Control interface advertising
+`KEY_MACRO28`.
+
+The original reusable inventory command was:
 
 ```bash
 printf 'OS: '; rpm -E '%{fedora}' 2>/dev/null || true; printf 'kernel: '; uname -r; printf 'whisper-cpp: '; rpm -q whisper-cpp python3-pywhispercpp ibus-speech-to-text 2>/dev/null || true; printf 'PipeWire: '; pw-record --version 2>/dev/null || echo absent; printf 'ydotool: '; ydotool --version 2>/dev/null || echo absent; printf 'Podman: '; podman --version 2>/dev/null || echo absent; printf 'NVIDIA: '; nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader 2>/dev/null || echo unavailable; printf 'CUDA compiler: '; nvcc --version 2>/dev/null | tail -1 || echo absent; printf 'service: '; systemctl --user is-active ydotool.service 2>/dev/null || true
@@ -105,11 +113,10 @@ Then capture the stable source properties for likely microphones:
 pw-dump | grep -E '"node.name"|"node.description"|"media.class"'
 ```
 
-Known historical names include RODE Microphones, rear/front HD-Audio inputs,
-and a USB camera microphone, but none is accepted as the current dictation
-target until this inventory is run.
+The accepted target is the exact serial-bearing RØDE node. Webcam and
+motherboard microphones are never fallback candidates.
 
-## Prototype phases
+## Prototype phase record
 
 ### Phase 1: audio and model, no key listener
 
@@ -148,31 +155,33 @@ microphone. Prefer two explicitly selected sources when available. Never assume
 that the conferencing application's default source is the source the daemon
 should record.
 
-## Acceptance tests
+## Acceptance record
 
-The first releasable service must pass all of these:
+MACE produced these results on 2026-07-26:
 
-- a brief press/release creates one and only one utterance;
-- holding the key does not create repeated starts;
-- the recording indicator appears immediately;
-- release changes the indicator to Transcribing immediately;
-- successful text appears once at the original cursor target;
-- an empty utterance inserts nothing;
-- an ASR failure inserts nothing and exposes a diagnostic;
-- ordinary typing, Meta, Level3, Level5, Any, Hyper, mouse layers, and media controls are unaffected;
-- logging out/in or rebooting starts the user service reliably;
-- a second Ansible run reports no changes;
-- conferencing coexistence is tested with the actual selected microphones.
+- [x] Press/release creates one utterance and hold repeat creates no second start.
+- [x] Recording and Transcribing notifications appear immediately and replace one another.
+- [x] Reviewed and ordinary text appears once without a submission key.
+- [x] Too-short, empty, and annotation-only results emit no text; live `[BLANK_AUDIO]` became an informational notification.
+- [x] Failures preserve diagnostics and raise an attention notification.
+- [x] Pre-injection focus mismatch blocks output; the live post-injection audit warned when 34 emitted characters could have crossed from Ptyxis to Firefox.
+- [x] The service remained enabled, active, and healthy after a system update and reboot.
+- [x] A no-op Ansible run reported zero changes and did not change the daemon PID.
+- [x] Ordinary typing and the accepted Any, Meta, Level3, Level5, mouse, and media boundaries remained separate.
+- [ ] Concurrent live Zoom or BigBlueButton microphone use remains a classroom follow-up; the daemon's exact-source, on-demand PipeWire capture is accepted without claiming that unperformed live test.
 
-## Open choices that require Nova
+## Resolved choices
 
-- preferred microphone after the live PipeWire inventory;
-- first model and acceptable release-to-text latency;
-- whether injected dictation should include a trailing space;
-- punctuation normalization policy;
-- exact visual indicator form;
-- whether the first implementation is Rust, Python, or a small shell-assisted daemon;
-- implementation repository name.
+- Microphone: serial-bearing RØDE NT-USB Mini until the planned Mackie migration.
+- Model: official English `base.en` on CPU.
+- Separation: exactly one managed trailing ASCII space per accepted utterance.
+- Punctuation: collapse whitespace, map a narrow smart-punctuation set to ASCII, and otherwise preserve model wording for human review.
+- Feedback: replaceable GNOME desktop notifications plus atomic runtime state.
+- Implementation: Python modules around packaged `pywhispercpp`, `pw-record`, evdev, Window Calls, and `ydotool`.
+- Repository: `wdcallahan/whisper-ptt`.
+
+The future Mackie source migration and live classroom conferencing coexistence
+remain operational follow-ups, not unresolved keyboard-transport choices.
 
 ## References
 

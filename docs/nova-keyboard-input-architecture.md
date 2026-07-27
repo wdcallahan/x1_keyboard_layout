@@ -144,7 +144,7 @@ The complete keyboard system spans several repositories because the layers have 
 | `x1_keyboard_layout` | Host-side XKB symbols, text levels, modifier meanings, GNOME input options and extensions, and the canonical documentation hub. |
 | `press-the-any-key` | GNOME shortcut registration, the Any Key script, `ydotoold`, and synthetic input through `/dev/uinput`. |
 | `hyperkeyd` | An experimental host-side Hyper command dispatcher that maps Hyper-plus-key events to executable scripts. It is not production-critical yet. |
-| Prepared Whisper project | The documented boundary for push-to-talk speech input; the implementation repository does not exist yet. |
+| `whisper-ptt` | Accepted local push-to-talk speech input: direct key listener, exact microphone, CPU Whisper, notifications, focus audit, and reviewed insertion. |
 
 These repositories should not be merged merely because they all concern one keyboard.
 
@@ -209,7 +209,7 @@ The special bottom-row controls use the remaining identities because their conce
 | `PB_26` | `KEY_MACRO26` / `XF86Macro26` | Any Key GNOME shortcut trigger |
 | `KC_APP` | `<COMP>` | Meta, exposed as `Meta_R` with virtual Meta on real Mod3 |
 | `KC_MENU` | `<PROP>` | Menu / application context menu |
-| `PB_28` | `KEY_MACRO28` / `XF86Macro28` | Prepared Whisper / push-to-talk trigger |
+| `PB_28` | `KEY_MACRO28` / `XF86Macro28` | Active Whisper / push-to-talk trigger |
 | `PB_29` | `KEY_MACRO29` / `XF86Macro29` | Level5 shift |
 
 XKB may internally identify these extra keys using names such as `<I674>` or `<I689>`. Those names belong to the compiled XKB keymap. They are not QMK matrix positions and not Linux evdev names.
@@ -226,7 +226,7 @@ Space | Whisper | Menu/Right Control | Any/Meta | Compose/AltGr
 
 The arrangement is ergonomic rather than decorative.
 
-- **Whisper** is expected to become a high-frequency control, so it receives a high-honor position near the spacebar.
+- **Whisper** became a high-frequency control immediately after deployment, validating its high-honor position near the spacebar.
 - **Control and Meta** must remain easy to chord with other command keys.
 - **Compose and AltGr** occupy a tactile outside edge, while AltGr remains close enough to Shift for fourth-level symbols.
 - **Any** receives a real physical position because a dedicated chaos key deserves commitment.
@@ -842,23 +842,31 @@ current inventory.
 
 ---
 
-# 19. Whisper: a key waiting for its software
+# 19. Whisper: the prepared interface fulfilled
 
 `PB_28` is reserved for Whisper or push-to-talk speech input.
 
 The physical position is already chosen and the firmware identity is already
-stable. The final host-side implementation has not been created yet.
+stable. The host-side implementation now lives in
+[`wdcallahan/whisper-ptt`](https://github.com/wdcallahan/whisper-ptt).
 
 This demonstrates the architecture’s central principle especially well.
 
-The keyboard can expose a durable identity before the software behavior exists.
+The keyboard exposed a durable identity before the software behavior existed.
+The later service consumed that identity without a firmware remap, a borrowed
+function key, or an XKB modifier.
 
-`docs/designs/whisper-ptt-boundary.md` already records the intended local,
-offline press/record/release/transcribe/inject boundary and acceptance
-contract. Later, a speech-input service can listen for `KEY_MACRO28` and
-implement that behavior without changing the firmware or moving the key.
+The accepted service listens directly for `KEY_MACRO28` press and release.
+Press begins an exact-source RØDE PipeWire recording. Release finalizes the
+audio, transcribes locally with the verified English `base.en` model on the
+CPU, checks that GNOME focus still matches, and injects the result through
+`ydotool` without pressing Enter. Desktop notifications expose recording,
+transcription, completion, no-speech, and attention states.
 
-The empty implementation is not a flaw. It is a prepared interface.
+The original `docs/designs/whisper-ptt-boundary.md` is therefore no longer a
+promise about future work. It is the record of a prepared interface whose
+implementation validated the separation between physical identity and host
+meaning.
 
 ---
 
@@ -1006,10 +1014,10 @@ Authoritative for:
 
 ## Whisper/PTT
 
-There is no implementation repository yet. Until one is created,
-`x1_keyboard_layout/docs/designs/whisper-ptt-boundary.md` is authoritative for
-the prepared boundary, state machine, inventory, prototype phases, and
-acceptance contract. “Prepared” must not be reported as “running.”
+`wdcallahan/whisper-ptt` is authoritative for capture, transcription,
+notification, focus-safety, injection, deployment, and runtime diagnostics.
+`x1_keyboard_layout/docs/designs/whisper-ptt-boundary.md` preserves the
+cross-project keyboard boundary and summarizes the accepted MACE result.
 
 This tour intentionally omits build systems, generated files, complete installers, full command-line parsers, packaging details, and most service boilerplate. Those details matter when maintaining a repository, but they are not necessary for understanding the keyboard as a designed system.
 
@@ -1049,9 +1057,10 @@ Ansible and documented host configuration turn a clever workstation trick into s
 
 ## Leave useful space unfilled
 
-A spare programmable button, unpopulated Level5 slots beyond the B canary, and
-a prepared-but-unimplemented Whisper trigger are invitations rather than
-omissions.
+A spare programmable button and unpopulated Level5 slots beyond the B canary
+are invitations rather than omissions. Whisper demonstrates that such prepared
+space can later become a daily-use feature without destabilizing the layers
+around it.
 
 ## Permit delight
 
@@ -1101,7 +1110,7 @@ It is also a keyboard that unmistakably belongs to its owner.
 | Any | `PB_26` | `KEY_MACRO26` | `XF86Macro26`, GNOME shortcut |
 | Meta | `KC_APP` | `<COMP>` | `Meta_R`, virtual Meta, real Mod3 |
 | Menu | `KC_MENU` | `<PROP>` | `Menu` |
-| Whisper | `PB_28` | `KEY_MACRO28` | Prepared push-to-talk trigger; no service yet |
+| Whisper | `PB_28` | `KEY_MACRO28` | Active local release-to-finalize dictation service |
 | Level5 | `PB_29` | `KEY_MACRO29` | `ISO_Level5_Shift`, Mod2 |
 
 # Appendix B: Runtime diagrams
@@ -1144,6 +1153,22 @@ press A
 ~/.hyper/a.sh executes
 ```
 
+## Whisper push-to-talk
+
+```text
+hold physical Whisper key
+    ↓
+PB_28 / KEY_MACRO28
+    ↓
+record exact RØDE PipeWire source
+    ↓
+release and transcribe with local base.en
+    ↓
+verify GNOME focus
+    ↓
+ydotool types reviewed text without Enter
+```
+
 ## Eight-level B canary
 
 ```text
@@ -1179,5 +1204,6 @@ arrow cluster becomes wheel movement
 - `wdcallahan/x1_keyboard_layout`
 - `wdcallahan/press-the-any-key`
 - `wdcallahan/hyperkeyd`
+- `wdcallahan/whisper-ptt`
 
 All are free-software projects, with the individual repositories carrying their authoritative licensing and implementation details.
