@@ -613,8 +613,7 @@ key → letter, digit, punctuation
 
 ## Extended text
 
-Handled by AltGr, Shift+AltGr, Compose, and the explicitly populated parts of
-Level5.
+Handled by the text selectors—Shift, AltGr, and Level5—plus Compose.
 
 ```text
 key + text selector → Unicode symbol
@@ -646,11 +645,14 @@ mouse layer + physical key → mouse movement, click, or wheel event
 
 ## Synthetic input
 
-Handled by `ydotoold` and `/dev/uinput`.
+Host-side tools can also generate keyboard input and feed it back into the
+active application.
 
 ```text
-host command → virtual keyboard event
+host action → generated keyboard input
 ```
+
+The exact mechanism belongs with the software that implements it.
 
 The system does not insist that one mechanism solve every problem.
 
