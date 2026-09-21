@@ -35,6 +35,10 @@ it is designed this way. When an exact current mapping or implementation detail
 matters, follow the appropriate source above rather than treating this tour as
 a status ledger.
 
+A change to an installer, test procedure, service implementation, or project
+milestone does not require changing this tour. A change to what the keyboard
+*means or does for Nova* does.
+
 ---
 
 # 1. The journey of a keypress
@@ -701,36 +705,8 @@ It assigns each problem to the layer best suited to it.
 ---
 
 
-# 20. What is authoritative, and what is explanatory?
 
-This document is the readable whole-system tour. It explains what Nova's
-keyboard does, how the pieces fit together, and why the design has this shape.
-
-It is deliberately **not** the live status ledger for every implementation
-project.
-
-Use these sources when exact current detail matters:
-
-- `files/us-nova` — current XKB symbol and modifier assignments.
-- `docs/symbol-vocabulary.md` — symbol-placement doctrine and rationale.
-- `docs/keyboard-architecture.md` — exact technical behavior, boundaries, and
-  acceptance evidence.
-- `wdcallahan/lemokey-x2-qmk` — firmware, physical mapping, tap/hold, and
-  pointer layers.
-- `wdcallahan/press-the-any-key` — Any Key implementation.
-- `wdcallahan/hyperkeyd` — Hyper command dispatcher implementation.
-- `wdcallahan/whisper-ptt` — speech-input implementation.
-
-The canonical copy of this tour lives in `x1_keyboard_layout`. ChatGPT Library
-copies are reading and sharing mirrors, not independent authorities.
-
-A change to an installer, test procedure, service implementation, or project
-milestone does not require changing this tour. A change to what the keyboard
-*means or does for Nova* does.
-
----
-
-# 21. Design principles worth preserving
+# 20. Design principles worth preserving
 
 The exact hardware and software will change. The principles are more durable.
 
@@ -775,7 +751,7 @@ A system used every day is allowed to contain jokes, strange historical letters,
 
 ---
 
-# 22. Closing: the keyboard as a personal language
+# 21. Closing: the keyboard as a personal language
 
 Most keyboards present themselves as fixed objects.
 
