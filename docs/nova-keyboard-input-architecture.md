@@ -793,7 +793,7 @@ It reflects a preference for:
 - recoverable configuration;
 - meaningful distinctions;
 - symbols worth remembering;
-- and experiments that remain funny after they become infrastructure.
+- and room for delight alongside serious engineering.
 
 The Any Key is not an exception to the architecture.
 
@@ -825,25 +825,13 @@ It is also a keyboard that unmistakably belongs to its owner.
 ## Any Key
 
 ```text
-tap physical Any/Meta key
+press physical Any key
     ↓
-PB_26
+stable programmable identity
     ↓
-KEY_MACRO26
+host-side Any action
     ↓
-XF86Macro26
-    ↓
-GNOME shortcut
-    ↓
-any.sh
-    ↓
-ydotool
-    ↓
-ydotoold
-    ↓
-/dev/uinput
-    ↓
-random alphanumeric character
+one randomly chosen ordinary character
 ```
 
 ## Hyper command
@@ -851,13 +839,13 @@ random alphanumeric character
 ```text
 hold physical Hyper key
     ↓
-PB_11 / KEY_MACRO11
+stable Hyper identity
     ↓
 HyperKeyD arms
     ↓
-press A
+press a command key
     ↓
-~/.hyper/a.sh executes
+matching host command executes
 ```
 
 ## Whisper push-to-talk
@@ -896,13 +884,13 @@ For the current character assigned at any of those levels, read `files/us-nova`.
 ```text
 press physical NumLock position
     ↓
-toggle MOUSE layer
+toggle mouse mode
     ↓
 arrow cluster becomes pointer movement
     ↓
 hold either Shift
     ↓
-SCROLL layer becomes active
+temporary scroll mode
     ↓
 arrow cluster becomes wheel movement
 ```
