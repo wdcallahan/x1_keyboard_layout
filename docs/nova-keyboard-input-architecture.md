@@ -89,7 +89,7 @@ Normal typing keys do not need much indirection. The physical A key can produce 
 
 Extra programmable keys are different.
 
-A relegendable key may launch OBS today, control a light tomorrow, and become a speech-to-text control later. Reflashing the keyboard every time its job changes would make ordinary experimentation into firmware maintenance.
+A relegendable key may launch OBS today, control a light tomorrow, and become a speech-to-text control later. Reflashing the keyboard every time its job changes would turn an ordinary host-side reassignment into firmware maintenance.
 
 For those keys, the firmware should emit an identity that is:
 
@@ -221,7 +221,7 @@ XKB may internally identify these extra keys using names such as `<I674>` or `<I
 
 # 7. The right-side special cluster
 
-Moving rightward after the spacebar, the current full-size prototype places the special controls approximately like this:
+Moving rightward after the spacebar, the current layout places the special controls approximately like this:
 
 ```text
 Space | Whisper | Menu/Right Control | Any/Meta | Compose/AltGr
@@ -229,7 +229,7 @@ Space | Whisper | Menu/Right Control | Any/Meta | Compose/AltGr
 
 The arrangement is ergonomic rather than decorative.
 
-- **Whisper** became a high-frequency control immediately after deployment, validating its high-honor position near the spacebar.
+- **Whisper** is a high-frequency control, so it earns a high-honor position near the spacebar.
 - **Control and Meta** must remain easy to chord with other command keys.
 - **Compose and AltGr** occupy a tactile outside edge, while AltGr remains close enough to Shift for fourth-level symbols.
 - **Any** receives a real physical position because a dedicated chaos key deserves commitment.
