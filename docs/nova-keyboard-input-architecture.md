@@ -510,8 +510,9 @@ So Nova labeled one **Any**.
 That immediately raised a better question: if an Any key really existed, what
 should it actually do?
 
-The answer he settled on was a random character generator. Press Any and the
-computer supplies a random alphanumeric character.
+The answer he settled on was literal: pressing **Any** should press any of the
+ordinary character keys for him. So each press chooses one at random and the
+computer receives that character.
 
 It was not solving an important productivity problem. Nova built it because it
 was funny, because he wanted it, and because figuring out how to make a physical
