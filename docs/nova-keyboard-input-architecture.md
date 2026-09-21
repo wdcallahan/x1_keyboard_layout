@@ -332,11 +332,12 @@ outputs without changing groups or modes.
 | Level 8 | Shift + AltGr + Level5 + key | Shifted combined-selector symbol |
 
 AltGr and Level5 are not separate subsystems. They are additional level
-selectors in the same XKB model. Ordinary Shift selects Level 2. AltGr—the
-traditional abbreviation for "Alternate Graphic"—is the familiar extra shift
-key used to reach Level 3, with Shift+AltGr reaching Level 4. Level5 is simply
-the next selector in that same progression. It is uncommon enough that it never
-acquired a similarly familiar everyday key name, so the technical name stuck.
+selectors in the same XKB model. Ordinary Shift is the familiar Level-2 shifter.
+AltGr is the familiar Level-3 shifter: hold it while pressing a key and you get
+that key's Level-3 meaning, just as Shift gives Level 2. Level5 is simply the
+next selector in the same progression. It is uncommon enough that it never
+picked up a similarly familiar everyday name, so it is usually just called
+Level5.
 
 In that sense, the keyboard has three "shift" controls available for choosing
 text: Shift, AltGr, and Level5.
