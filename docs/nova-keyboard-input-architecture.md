@@ -894,13 +894,3 @@ temporary scroll mode
     ↓
 arrow cluster becomes wheel movement
 ```
-
-# Appendix C: Source projects
-
-- `wdcallahan/lemokey-x2-qmk`
-- `wdcallahan/x1_keyboard_layout`
-- `wdcallahan/press-the-any-key`
-- `wdcallahan/hyperkeyd`
-- `wdcallahan/whisper-ptt`
-
-All are free-software projects, with the individual repositories carrying their authoritative licensing and implementation details.
