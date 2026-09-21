@@ -332,8 +332,14 @@ outputs without changing groups or modes.
 | Level 8 | Shift + AltGr + Level5 + key | Shifted combined-selector symbol |
 
 AltGr and Level5 are not separate subsystems. They are additional level
-selectors in the same XKB model. In that sense, the keyboard has three
-"shift" controls available for choosing text: Shift, AltGr, and Level5.
+selectors in the same XKB model. Ordinary Shift selects Level 2. AltGr—the
+traditional abbreviation for "Alternate Graphic"—is the familiar extra shift
+key used to reach Level 3, with Shift+AltGr reaching Level 4. Level5 is simply
+the next selector in that same progression. It is uncommon enough that it never
+acquired a similarly familiar everyday key name, so the technical name stuck.
+
+In that sense, the keyboard has three "shift" controls available for choosing
+text: Shift, AltGr, and Level5.
 
 The B key was the first eight-level canary, used to prove that all of those
 levels could coexist cleanly in one group. That proof does not mean every key
