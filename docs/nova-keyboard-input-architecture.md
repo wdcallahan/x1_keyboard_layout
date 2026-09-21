@@ -696,7 +696,8 @@ Each component is narrow enough to explain:
 - XKB handles symbols and modifiers.
 - GNOME handles desktop shortcuts.
 - HyperKeyD dispatches scripts.
-- Any Key uses `ydotool` for deliberate synthetic input.
+- Host-side tools handle deliberate synthetic input when software needs to put
+  generated text or key events back into an application.
 
 ---
 
@@ -763,10 +764,10 @@ Ansible and documented host configuration turn a clever workstation trick into s
 
 ## Leave useful space unfilled
 
-A spare programmable button and unpopulated Level5 slots beyond the B canary
-are invitations rather than omissions. Whisper demonstrates that such prepared
-space can later become a daily-use feature without destabilizing the layers
-around it.
+Not every available level or programmable identity has to be populated merely
+because it exists. Unused capacity can remain available until a real use earns
+it. The architecture should make future additions possible without forcing
+speculative assignments today.
 
 ## Permit delight
 
