@@ -269,8 +269,6 @@ press becomes a hold, and no timing threshold decides between them.
 
 ---
 
----
-
 # 9. Typing space and command space are different systems
 
 The keyboard distinguishes two ideas that are often blurred together.
@@ -339,8 +337,6 @@ empty level needs to be filled.
 
 ---
 
----
-
 # 11. The symbol vocabulary
 
 The exact current direct-symbol map is intentionally **not duplicated here**.
@@ -369,8 +365,6 @@ For this tour, the important facts are simpler:
 
 A future reader or assistant should consult `files/us-nova`, not an old prose
 example, before asserting a current symbol assignment.
-
----
 
 ---
 
@@ -435,8 +429,6 @@ the technical architecture document.
 
 ---
 
----
-
 # 14. CapsLock without a CapsLock key
 
 The physical CapsLock position is too valuable to dedicate to a rarely used lock.
@@ -492,8 +484,6 @@ through a virtual keyboard.
 Until that tradeoff is worth making, Hyper remains a command plane with a known
 leakage edge. Exact HyperKeyD implementation and deployment details belong in
 the `hyperkeyd` repository.
-
----
 
 ---
 
@@ -598,8 +588,6 @@ in the firmware and technical architecture documentation.
 
 ---
 
----
-
 # 18. Level5 and the first eight-level canary
 
 AltGr supplies Levels 3 and 4. A separate Level5 selector extends selected keys
@@ -612,8 +600,6 @@ work.
 
 The current Level5 assignments belong in `files/us-nova`; the placement
 doctrine belongs in `docs/symbol-vocabulary.md`.
-
----
 
 ---
 
@@ -632,8 +618,6 @@ speech implementation, so the software could evolve without remapping firmware.
 
 The exact microphone, model, audio pipeline, focus checks, deployment, and
 runtime diagnostics belong in `wdcallahan/whisper-ptt`.
-
----
 
 ---
 
@@ -758,8 +742,6 @@ milestone does not require changing this tour. A change to what the keyboard
 
 ---
 
----
-
 # 23. Design principles worth preserving
 
 The exact hardware and software will change. The principles are more durable.
@@ -847,7 +829,7 @@ It is also a keyboard that unmistakably belongs to its owner.
 | Any | `PB_26` | `KEY_MACRO26` | `XF86Macro26`, GNOME shortcut |
 | Meta | `KC_APP` | `<COMP>` | `Meta_R`, virtual Meta, real Mod3 |
 | Menu | `KC_MENU` | `<PROP>` | `Menu` |
-| Whisper | `PB_28` | `KEY_MACRO28` | Active local release-to-finalize dictation service |
+| Whisper | `PB_28` | `KEY_MACRO28` | Local release-to-finalize dictation service |
 | Level5 | `PB_29` | `KEY_MACRO29` | `ISO_Level5_Shift`, Mod2 |
 
 # Appendix B: Runtime diagrams
