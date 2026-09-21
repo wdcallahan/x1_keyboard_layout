@@ -137,9 +137,10 @@ Other possible spare namespaces—media keys, browser keys, language keys, power
 
 ---
 
-# 4. The projects and their boundaries
+# 4. The projects and why they are separate
 
-The complete keyboard system spans several repositories because the layers have different responsibilities.
+The complete keyboard system spans several repositories because different kinds
+of behavior belong at different layers.
 
 | Project | Responsibility |
 | --- | --- |
@@ -149,9 +150,27 @@ The complete keyboard system spans several repositories because the layers have 
 | `hyperkeyd` | Host-side Hyper command dispatcher that maps Hyper-plus-key events to executable scripts. |
 | `whisper-ptt` | Host-side push-to-talk dictation for the dedicated Whisper key. |
 
-These repositories should not be merged merely because they all concern one keyboard.
+They are separate on purpose.
 
-Firmware identity and host meaning are intentionally separate. The useful integration point is documentation: a single tour can show how the pieces cooperate without erasing their design boundaries.
+Firmware owns things that depend on the physical keyboard itself: key identity,
+tap/hold decisions, and hardware layers. Those behaviors should remain reliable
+even when desktop software is busy or absent.
+
+XKB owns text interpretation: symbols, shift levels, and modifier meanings. It
+is excellent at choosing what a key means as text, but it is not a general
+command engine.
+
+Desktop and host-side software own behaviors that depend on applications or the
+operating system: launching commands, dictation, shortcuts, and generated input.
+Those jobs can change without reflashing the keyboard.
+
+Keeping those boundaries means an ordinary host-side change does not become a
+firmware change, while timing-sensitive physical behavior does not depend on a
+desktop daemon.
+
+The repositories therefore stay separate, while this document provides the
+single human-readable tour of how they fit together. When exact implementation
+detail matters, the project listed above is where to look.
 
 ---
 
@@ -332,12 +351,26 @@ outputs without changing groups or modes.
 | Level 8 | Shift + AltGr + Level5 + key | Shifted combined-selector symbol |
 
 AltGr and Level5 are not separate subsystems. They are additional level
-selectors in the same XKB model. Ordinary Shift is the familiar Level-2 shifter.
-AltGr is the familiar Level-3 shifter: hold it while pressing a key and you get
-that key's Level-3 meaning, just as Shift gives Level 2. Level5 is simply the
-next selector in the same progression. It is uncommon enough that it never
-picked up a similarly familiar everyday name, so it is usually just called
-Level5.
+selectors in the same XKB model.
+
+The easiest way to understand the numbering is as successive selector bits.
+With no selector held, a key produces Level 1. Ordinary Shift adds the first
+choice and gives Level 2.
+
+AltGr is the familiar Level-3 shifter. Adding it does not merely add one more
+output; it doubles the available combinations. AltGr alone selects Level 3, and
+Shift+AltGr selects Level 4.
+
+Level5 is the next selector in exactly the same progression. Adding it doubles
+the space again: Level5 and its combinations with Shift and AltGr provide
+Levels 5 through 8.
+
+Conceptually, another selector of the same kind would begin at Level 9 and could
+double the space again to sixteen combinations. Nova's layout does not need that;
+the point is that the numbering follows the combination structure.
+
+Level5 is uncommon enough that it never picked up a similarly familiar everyday
+name, so it is usually just called Level5.
 
 In that sense, the keyboard has three "shift" controls available for choosing
 text: Shift, AltGr, and Level5.
@@ -667,41 +700,8 @@ It assigns each problem to the layer best suited to it.
 
 ---
 
-# 20. Why the architecture is intentionally distributed
 
-A monolithic keyboard system might appear simpler because all behavior lives in one place.
-
-In practice, that would create poor boundaries.
-
-Putting everything in firmware would mean:
-
-- reflashing for ordinary command changes;
-- embedding desktop-specific behavior into the keyboard;
-- losing access to rich host software;
-- and making one keyboard less portable between machines.
-
-Putting everything in a host remapper would mean:
-
-- giving up deterministic physical tap/hold behavior;
-- relying on a critical daemon for basic keyboard operation;
-- and blurring text, command, and pointer semantics.
-
-Putting everything in XKB would be impossible because XKB is excellent at symbol and modifier selection but is not a general command runtime.
-
-The distributed design is more complex in the small but cleaner in the large.
-
-Each component is narrow enough to explain:
-
-- QMK handles physical behavior.
-- XKB handles symbols and modifiers.
-- GNOME handles desktop shortcuts.
-- HyperKeyD dispatches scripts.
-- Host-side tools handle deliberate synthetic input when software needs to put
-  generated text or key events back into an application.
-
----
-
-# 21. What is authoritative, and what is explanatory?
+# 20. What is authoritative, and what is explanatory?
 
 This document is the readable whole-system tour. It explains what Nova's
 keyboard does, how the pieces fit together, and why the design has this shape.
@@ -730,7 +730,7 @@ milestone does not require changing this tour. A change to what the keyboard
 
 ---
 
-# 22. Design principles worth preserving
+# 21. Design principles worth preserving
 
 The exact hardware and software will change. The principles are more durable.
 
@@ -775,7 +775,7 @@ A system used every day is allowed to contain jokes, strange historical letters,
 
 ---
 
-# 23. Closing: the keyboard as a personal language
+# 22. Closing: the keyboard as a personal language
 
 Most keyboards present themselves as fixed objects.
 
