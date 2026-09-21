@@ -309,27 +309,29 @@ Keeping these systems conceptually distinct makes a heavily customized keyboard 
 
 # 10. Text levels
 
-Most keys build on ordinary US typing.
+Most keys build on ordinary US typing, with additional selectors opening higher
+levels of the same XKB group.
 
 | Level | Gesture | Role |
 | --- | --- | --- |
 | Level 1 | key | Normal US character |
 | Level 2 | Shift + key | Shifted US character |
-| Level 3 | AltGr + key | First custom symbol |
-| Level 4 | Shift + AltGr + key | Paired or related custom symbol |
-| Level 5 | Level5 + key | Additional direct symbol where explicitly defined |
-| Level 6 | Shift + Level5 + key | Shifted Level5 symbol where explicitly defined |
-| Level 7 | AltGr + Level5 + key | Combined-selector symbol where explicitly defined |
-| Level 8 | Shift + AltGr + Level5 + key | Shifted combined-selector symbol where explicitly defined |
+| Level 3 | AltGr + key | First additional symbol |
+| Level 4 | Shift + AltGr + key | Shifted or paired additional symbol |
+| Level 5 | Level5 + key | Next additional symbol where defined |
+| Level 6 | Shift + Level5 + key | Shifted Level5 symbol |
+| Level 7 | AltGr + Level5 + key | Combined-selector symbol |
+| Level 8 | Shift + AltGr + Level5 + key | Shifted combined-selector symbol |
 
-The first two levels remain familiar. Higher levels provide a curated vocabulary
-without replacing ordinary typing. Level5 extends the same XKB group to as many
-as eight levels where a key has earned additional meanings.
+AltGr and Level5 are the same kind of idea: each is a selector that contributes
+another bit of level choice. AltGr opens Levels 3 and 4; Level5 opens the next
+set, and the two selectors can combine for Levels 7 and 8.
 
-The B key was the first eight-level canary, proving that the mechanism works.
-Its current outputs, like every other direct symbol assignment, belong in the
-live XKB source rather than being copied into this tour.
+The B key was the first eight-level canary, used to prove that all of those
+levels could coexist cleanly in one group. That proof does not mean every key
+needs eight assigned outputs. Empty higher levels are useful spare capacity.
 
+The exact current characters assigned to any level belong in `files/us-nova`.
 Placement favors mnemonic association, useful families, technical and
 linguistic symbols, text-control characters, and personal delight. A symbol
 earns a direct slot because Nova has a reason to reach for it, not because an
@@ -588,22 +590,8 @@ in the firmware and technical architecture documentation.
 
 ---
 
-# 18. Level5 and the first eight-level canary
 
-AltGr supplies Levels 3 and 4. A separate Level5 selector extends selected keys
-through Levels 5–8 in the same XKB group.
-
-The B key was the first deliberate eight-level canary. Its purpose was to prove
-the selector architecture without forcing speculative assignments onto every
-other key. Empty higher-level slots are useful spare capacity, not unfinished
-work.
-
-The current Level5 assignments belong in `files/us-nova`; the placement
-doctrine belongs in `docs/symbol-vocabulary.md`.
-
----
-
-# 19. Whisper: speech input on a real key
+# 18. Whisper: speech input on a real key
 
 Whisper has a dedicated physical key with a stable programmable-button identity.
 
@@ -621,7 +609,7 @@ runtime diagnostics belong in `wdcallahan/whisper-ptt`.
 
 ---
 
-# 20. One keyboard, several kinds of meaning
+# 19. One keyboard, several kinds of meaning
 
 The design can now be summarized by category.
 
@@ -680,7 +668,7 @@ It assigns each problem to the layer best suited to it.
 
 ---
 
-# 21. Why the architecture is intentionally distributed
+# 20. Why the architecture is intentionally distributed
 
 A monolithic keyboard system might appear simpler because all behavior lives in one place.
 
@@ -713,7 +701,7 @@ Each component is narrow enough to explain:
 
 ---
 
-# 22. What is authoritative, and what is explanatory?
+# 21. What is authoritative, and what is explanatory?
 
 This document is the readable whole-system tour. It explains what Nova's
 keyboard does, how the pieces fit together, and why the design has this shape.
@@ -742,7 +730,7 @@ milestone does not require changing this tour. A change to what the keyboard
 
 ---
 
-# 23. Design principles worth preserving
+# 22. Design principles worth preserving
 
 The exact hardware and software will change. The principles are more durable.
 
@@ -787,7 +775,7 @@ A system used every day is allowed to contain jokes, strange historical letters,
 
 ---
 
-# 24. Closing: the keyboard as a personal language
+# 23. Closing: the keyboard as a personal language
 
 Most keyboards present themselves as fixed objects.
 
