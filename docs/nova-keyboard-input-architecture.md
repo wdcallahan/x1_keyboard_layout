@@ -307,10 +307,18 @@ Keeping these systems conceptually distinct makes a heavily customized keyboard 
 
 ---
 
-# 10. Text levels
+# 10. Text levels: three clutches for one keyboard
 
-Most keys build on ordinary US typing, with additional selectors opening higher
-levels of the same XKB group.
+A car has a clutch pedal. Big trucks can have more elaborate clutch systems.
+
+Well, guess what‼
+
+This keyboard has three shift-like selectors.
+
+Ordinary Shift is the familiar one. AltGr is another selector, opening Levels 3
+and 4. Level5 is the next bit of the same idea, opening another set of levels.
+Used together, those selectors let one physical key reach as many as eight
+outputs without changing groups or modes.
 
 | Level | Gesture | Role |
 | --- | --- | --- |
@@ -323,9 +331,9 @@ levels of the same XKB group.
 | Level 7 | AltGr + Level5 + key | Combined-selector symbol |
 | Level 8 | Shift + AltGr + Level5 + key | Shifted combined-selector symbol |
 
-AltGr and Level5 are the same kind of idea: each is a selector that contributes
-another bit of level choice. AltGr opens Levels 3 and 4; Level5 opens the next
-set, and the two selectors can combine for Levels 7 and 8.
+AltGr and Level5 are not separate subsystems. They are additional level
+selectors in the same XKB model. In that sense, the keyboard has three
+"shift" controls available for choosing text: Shift, AltGr, and Level5.
 
 The B key was the first eight-level canary, used to prove that all of those
 levels could coexist cleanly in one group. That proof does not mean every key
@@ -591,15 +599,10 @@ in the firmware and technical architecture documentation.
 ---
 
 
-# 18. Whisper: a speech clutch
-
-A clutch pedal is a control you hold while doing something else. Some heavy
-vehicle clutches even use more than one friction disc.
-
-Well, guess what‼
+# 18. Whisper: local voice typing on a real key
 
 A lot of people already voice-type on their phones. Tap the microphone button
-on a phone keyboard, talk instead of typing, and clean up the occasional mistake
+on the keyboard, talk instead of typing, and clean up the occasional mistake
 afterward. That is often much faster than typing the whole thought by hand.
 
 Desktop computers do not usually make that experience nearly as convenient,
@@ -618,7 +621,7 @@ words afterward is often easier than typing the entire passage from scratch.
 
 Whisper also demonstrates the architecture's central rule especially well. The
 physical key has a stable programmable-button identity; the speech system behind
-it can evolve independently without requiring the keyboard firmware to learn
+it can evolve independently without requiring the keyboard firmware to know
 anything about microphones or transcription.
 
 The exact microphone, model, audio pipeline, focus checks, deployment, and
