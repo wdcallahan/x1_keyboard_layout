@@ -591,18 +591,35 @@ in the firmware and technical architecture documentation.
 ---
 
 
-# 18. Whisper: speech input on a real key
+# 18. Whisper: a speech clutch
 
-Whisper has a dedicated physical key with a stable programmable-button identity.
+A clutch pedal is a control you hold while doing something else. Some heavy
+vehicle clutches even use more than one friction disc.
 
-Holding it begins local speech capture. Releasing it finishes the utterance,
-transcribes it, verifies the intended application context, and inserts the text
-without pressing Enter. Notifications make the recording, transcription, and
-attention states visible.
+Well, guess what‼
 
-Whisper is a particularly good example of the architecture's central rule. The
-physical key and its identity were prepared independently of the host-side
-speech implementation, so the software could evolve without remapping firmware.
+A lot of people already voice-type on their phones. Tap the microphone button
+on a phone keyboard, talk instead of typing, and clean up the occasional mistake
+afterward. That is often much faster than typing the whole thought by hand.
+
+Desktop computers do not usually make that experience nearly as convenient,
+and common speech-input services often send the audio or transcription work to
+a remote service.
+
+The Whisper key gives Nova a local version of that familiar interaction.
+
+Hold the key and talk. Release it when the utterance is finished. The workstation
+records and transcribes the speech locally, checks that the intended application
+context is still appropriate, and inserts the resulting text without pressing
+Enter.
+
+The transcription does not have to be perfect to be useful. Correcting a few
+words afterward is often easier than typing the entire passage from scratch.
+
+Whisper also demonstrates the architecture's central rule especially well. The
+physical key has a stable programmable-button identity; the speech system behind
+it can evolve independently without requiring the keyboard firmware to learn
+anything about microphones or transcription.
 
 The exact microphone, model, audio pipeline, focus checks, deployment, and
 runtime diagnostics belong in `wdcallahan/whisper-ptt`.
