@@ -145,7 +145,7 @@ The complete keyboard system spans several repositories because the layers have 
 | --- | --- |
 | `lemokey-x2-qmk` | Firmware, physical layout, programmable-button identities, deterministic tap/hold behavior, mouse layers, and the NumLock-position layer lamp. |
 | `x1_keyboard_layout` | Host-side XKB symbols, text levels, modifier meanings, GNOME input options and extensions, and the canonical documentation hub. |
-| `press-the-any-key` | GNOME shortcut registration, the Any Key script, `ydotoold`, and synthetic input through `/dev/uinput`. |
+| `press-the-any-key` | Host-side Any Key behavior and deliberate synthetic input. |
 | `hyperkeyd` | Host-side Hyper command dispatcher that maps Hyper-plus-key events to executable scripts. |
 | `whisper-ptt` | Host-side push-to-talk dictation for the dedicated Whisper key. |
 
