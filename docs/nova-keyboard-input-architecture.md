@@ -21,16 +21,19 @@ The canonical, version-controlled copy of this guided tour lives in the
 `docs/nova-keyboard-input-architecture.md`. The ChatGPT Library copy is a
 convenient reading and sharing mirror, not a second source of truth.
 
-Two companion documents divide the details deliberately:
+The detailed sources divide the changing facts deliberately:
 
-- `docs/keyboard-architecture.md` records the exact current implementation,
-  acceptance evidence, and operational boundaries.
-- `docs/symbol-vocabulary.md` records the direct symbol inventory and the
-  doctrine behind individual placements.
+- `docs/keyboard-architecture.md` records exact technical behavior,
+  implementation boundaries, and acceptance evidence.
+- `files/us-nova` is the authoritative XKB source for the current direct
+  symbol assignments. Those assignments may change without this tour changing.
+- `docs/symbol-vocabulary.md` explains the doctrine and rationale behind
+  symbol placement without making this tour another copy of the live keymap.
 
-The guide you are reading explains how the whole machine fits together. When
-an exact mapping or live status matters, the version-controlled implementation
-and those companion documents win.
+The guide you are reading explains how the whole machine fits together and why
+it is designed this way. When an exact current mapping or implementation detail
+matters, follow the appropriate source above rather than treating this tour as
+a status ledger.
 
 ---
 
@@ -143,8 +146,8 @@ The complete keyboard system spans several repositories because the layers have 
 | `lemokey-x2-qmk` | Firmware, physical layout, programmable-button identities, deterministic tap/hold behavior, mouse layers, and the NumLock-position layer lamp. |
 | `x1_keyboard_layout` | Host-side XKB symbols, text levels, modifier meanings, GNOME input options and extensions, and the canonical documentation hub. |
 | `press-the-any-key` | GNOME shortcut registration, the Any Key script, `ydotoold`, and synthetic input through `/dev/uinput`. |
-| `hyperkeyd` | An experimental host-side Hyper command dispatcher that maps Hyper-plus-key events to executable scripts. It is not production-critical yet. |
-| `whisper-ptt` | Accepted local push-to-talk speech input: direct key listener, exact microphone, CPU Whisper, notifications, focus audit, and reviewed insertion. |
+| `hyperkeyd` | Host-side Hyper command dispatcher that maps Hyper-plus-key events to executable scripts. |
+| `whisper-ptt` | Host-side push-to-talk dictation for the dedicated Whisper key. |
 
 These repositories should not be merged merely because they all concern one keyboard.
 
@@ -260,44 +263,11 @@ That means the user does not need to race a tapping term. A key becomes a hold b
 
 An earlier version also used tap Right Shift for CapsLock and hold for Shift. That was removed. Right Shift is now an ordinary Shift key, and CapsLock is toggled by pressing both Shift keys together.
 
-## Relevant QMK representation
+The exact firmware implementation belongs to `lemokey-x2-qmk`. For this tour,
+the important behavior is the rule itself: a lone press is a tap, an interrupted
+press becomes a hold, and no timing threshold decides between them.
 
-The firmware represents actions as either ordinary QMK keycodes or programmable-button events:
-
-```c
-typedef enum {
-    NOVA_NORMAL,
-    NOVA_PB,
-} nova_action_type_t;
-
-typedef struct {
-    nova_action_type_t type;
-    uint16_t code;
-} nova_action_t;
-
-typedef struct {
-    uint16_t keycode;
-    nova_action_t tap;
-    nova_action_t hold;
-    bool active;
-    bool interrupted;
-    bool hold_registered;
-} nova_dual_t;
-
-#define NORMAL_ACTION(kc) { NOVA_NORMAL, (kc) }
-#define PB_ACTION(index)  { NOVA_PB,     (index) }
-
-static nova_dual_t nova_duals[] = {
-    { N_RCTL, PB_ACTION(12),          PB_ACTION(25),          false, false, false },
-    { N_FN,   NORMAL_ACTION(KC_MENU), NORMAL_ACTION(KC_RCTL), false, false, false },
-    { N_MENU, PB_ACTION(26),          NORMAL_ACTION(KC_APP),  false, false, false },
-    { N_INS,  NORMAL_ACTION(KC_INS),  PB_ACTION(29),          false, false, false },
-};
-```
-
-When another key interrupts a pending dual-role key, the hold action is registered immediately. When the dual-role key is released without interruption, its tap action is emitted.
-
-This puts physical timing and chord recognition in firmware, where that behavior belongs, while leaving the semantic meaning of `PB_12`, `PB_25`, and the other programmable identities to the host.
+---
 
 ---
 
@@ -339,11 +309,9 @@ Keeping these systems conceptually distinct makes a heavily customized keyboard 
 
 ---
 
-# 10. The four-level base and eight-level canary
+# 10. Text levels
 
-Most keys use a four-level layout built on top of ordinary US typing. The B
-key is the first deliberate eight-level canary and proves that Level5 can
-extend the same single XKB group without replacing the four-level vocabulary.
+Most keys build on ordinary US typing.
 
 | Level | Gesture | Role |
 | --- | --- | --- |
@@ -356,139 +324,53 @@ extend the same single XKB group without replacing the four-level vocabulary.
 | Level 7 | AltGr + Level5 + key | Combined-selector symbol where explicitly defined |
 | Level 8 | Shift + AltGr + Level5 + key | Shifted combined-selector symbol where explicitly defined |
 
-The first two levels remain familiar. The custom vocabulary occupies levels three and four.
+The first two levels remain familiar. Higher levels provide a curated vocabulary
+without replacing ordinary typing. Level5 extends the same XKB group to as many
+as eight levels where a key has earned additional meanings.
 
-The custom symbols are not intended as a random Unicode showcase. Placement follows several overlapping principles:
+The B key was the first eight-level canary, proving that the mechanism works.
+Its current outputs, like every other direct symbol assignment, belong in the
+live XKB source rather than being copied into this tour.
 
-- mnemonic association;
-- paired uppercase/lowercase or checked/unchecked forms;
-- mathematical families;
-- visual similarity;
-- historical or linguistic interest;
-- symbols used in technical writing;
-- and personal delight.
+Placement favors mnemonic association, useful families, technical and
+linguistic symbols, text-control characters, and personal delight. A symbol
+earns a direct slot because Nova has a reason to reach for it, not because an
+empty level needs to be filled.
 
-A symbol table is part utility and part autobiography.
+---
 
 ---
 
 # 11. The symbol vocabulary
 
-## Number row
+The exact current direct-symbol map is intentionally **not duplicated here**.
 
-| Key | Level 1 | Level 2 | Level 3 | Level 4 |
-| --- | --- | --- | --- | --- |
-| `` ` `` | `` ` `` | `~` | `⎓` direct current | `⏦` alternating current |
-| `1` | `1` | `!` | `‼` double exclamation | `⚠` warning |
-| `2` | `2` | `@` | `₿` Bitcoin sign | `☡` caution |
-| `3` | `3` | `#` | `π` pi | `τ` tau |
-| `4` | `4` | `$` | `₹` rupee | `φ` phi |
-| `5` | `5` | `%` | `€` euro | `⅌` per sign |
-| `6` | `6` | `^` | `∑` summation | `θ` theta |
-| `7` | `7` | `&` | `⅋` turned ampersand / par | `⊕` circled plus |
-| `8` | `8` | `*` | `⁂` asterism | `⊗` circled times |
-| `9` | `9` | `(` | `△` triangle | `Δ` delta |
-| `0` | `0` | `)` | `○` circle | `☐` empty ballot box |
-| `-` | `-` | `_` | `∅` empty set | `🅭` Creative Commons mark |
-| `=` | `=` | `+` | `≈` approximately equal | `≡` identical/equivalent |
+The authoritative source is:
 
-The number row contains dense mathematical, monetary, warning, and editorial vocabulary. Many pairs are intentionally related: `π/τ`, `△/Δ`, `≈/≡`, and `⊕/⊗`.
+`x1_keyboard_layout/files/us-nova`
 
-## Q row
+That is the file to inspect when the question is “What does this key produce
+today?” It can change as the vocabulary evolves without requiring an editorial
+revision of this guided tour.
 
-| Key | Level 1 | Level 2 | Level 3 | Level 4 |
-| --- | --- | --- | --- | --- |
-| Q | `q` | `Q` | `☠` skull and crossbones | `☣` biohazard |
-| W | `w` | `W` | `ŭ` u with breve | `Ŭ` uppercase |
-| E | `e` | `E` | `ë` e with diaeresis | `Ë` uppercase |
-| R | `r` | `R` | `ƿ` wynn | `Ƿ` uppercase wynn |
-| T | `t` | `T` | `þ` thorn | `Þ` uppercase thorn |
-| Y | `y` | `Y` | `✓` check mark | `☑` checked box |
-| U | `u` | `U` | `ü` u with diaeresis | `Ü` uppercase |
-| I | `i` | `I` | `ï` i with diaeresis | `Ï` uppercase |
-| O | `o` | `O` | `ö` o with diaeresis | `Ö` uppercase |
-| P | `p` | `P` | `Φ` uppercase phi | `℗` sound-recording copyright |
-| `[` | `[` | `{` | `⧘` left wiggly fence | `∵` because |
-| `]` | `]` | `}` | `⧙` right wiggly fence | `∴` therefore |
-| `\` | `\` | `|` | `❣` heavy heart exclamation | `❢` heavy exclamation ornament |
+`docs/symbol-vocabulary.md` has the complementary job: it records why symbols
+earn direct slots, how mnemonic families and neighborhoods influence placement,
+and which principles should survive future rearrangement.
 
-The alphabetic rows carry useful European letters, historical English letters, logical and mathematical signs, and expressive punctuation.
+For this tour, the important facts are simpler:
 
-## A row
+- Levels 1 and 2 preserve ordinary US typing.
+- AltGr selects Levels 3 and 4.
+- Level5 can extend selected keys through Levels 5–8.
+- Higher levels may also give non-letter keys useful textual roles, including
+  direction and invisible line-breaking control.
+- Compose supplies characters that are useful but do not deserve permanent
+  direct real estate.
 
-| Key | Level 1 | Level 2 | Level 3 | Level 4 |
-| --- | --- | --- | --- | --- |
-| A | `a` | `A` | `ä` | `Ä` |
-| S | `s` | `S` | `ŝ` | `Ŝ` |
-| D | `d` | `D` | `ð` eth | `Ð` |
-| F | `f` | `F` | `℉` Fahrenheit | `℃` Celsius |
-| G | `g` | `G` | `ĝ` | `Ĝ` |
-| H | `h` | `H` | `ĥ` | `Ĥ` |
-| J | `j` | `J` | `ĵ` | `Ĵ` |
-| K | `k` | `K` | `ȝ` yogh | `Ȝ` |
-| L | `l` | `L` | `λ` lambda | — |
-| `;` | `;` | `:` | `∶` ratio | `∷` proportion |
-| `'` | `'` | `"` | `′` prime | `″` double prime |
+A future reader or assistant should consult `files/us-nova`, not an old prose
+example, before asserting a current symbol assignment.
 
-The A row includes a particularly tidy set of paired letters and scientific notation. Fahrenheit and Celsius share F. Ratio and proportion share the semicolon key. Prime and double-prime naturally occupy the quote key.
-
-## Z row
-
-| Key | Level 1 | Level 2 | Level 3 | Level 4 |
-| --- | --- | --- | --- | --- |
-| Z | `z` | `Z` | `Ω` omega | — |
-| X | `x` | `X` | `ƒ` florin/function | `ſ` long s |
-| C | `c` | `C` | `ĉ` | `Ĉ` |
-| V | `v` | `V` | `⚛` atom | `☢` radiation |
-| B | `b` | `B` | `β` beta | `α` alpha |
-| N | `n` | `N` | `✗` cross mark | `☒` crossed box |
-| M | `m` | `M` | `℞` prescription | `⚕` staff of Aesculapius |
-| `,` | `,` | `<` | `≤` less than or equal | `≲` less than or approximately equal |
-| `.` | `.` | `>` | `≥` greater than or equal | `≳` greater than or approximately equal |
-| `/` | `/` | `?` | `⁇` double question mark | `⸮` irony mark |
-
-The Z row contains paired hazards, comparison operators, editorial marks, Greek letters, and medical symbols. The irony mark on the question-mark key may be one of the clearest examples of the layout’s personality.
-
-## Level5 B canary
-
-Only B currently has a deliberate eight-level type. It retains its familiar
-first four levels and adds a small, memorable family:
-
-| Gesture | Output |
-| --- | --- |
-| B | `b` |
-| Shift + B | `B` |
-| AltGr + B | `β` |
-| Shift + AltGr + B | `α` |
-| Level5 + B | `🐇` |
-| Shift + Level5 + B | `🐰` |
-| AltGr + Level5 + B | `🥬` |
-| Shift + AltGr + Level5 + B | `🥕` |
-
-The canary proved that all eight levels can coexist in one group. Keys without
-an explicit eight-level type remain on their existing vocabulary.
-
-## Arrow keys
-
-| Physical key | Normal behavior | AltGr | Shift + AltGr |
-| --- | --- | --- | --- |
-| Up | move upward | `↑` | `👆` |
-| Left | move left | `←` | `👈` |
-| Down | move downward | `↓` | `👇` |
-| Right | move right | `→` | `👉` |
-
-The physical arrow keys remain navigation controls at levels one and two, but can type arrow glyphs and pointing hands at levels three and four.
-
-## Space
-
-| Gesture | Output |
-| --- | --- |
-| Space | ordinary space |
-| Shift + Space | ordinary space |
-| AltGr + Space | narrow non-breaking space |
-| Shift + AltGr + Space | soft hyphen |
-
-Invisible characters deserve deliberate placement because they are difficult to enter correctly by accident and difficult to diagnose after the fact.
+---
 
 ---
 
@@ -513,7 +395,8 @@ Compose therefore complements the symbol table rather than competing with it.
 
 # 13. Modifier allocation
 
-XKB has eight real modifier bits whose names reflect long X11 history. The design assigns them according to current purpose.
+XKB has eight real modifier bits whose names reflect X11 history. This design
+assigns them by purpose:
 
 | Real modifier slot | Intended role |
 | --- | --- |
@@ -526,58 +409,31 @@ XKB has eight real modifier bits whose names reflect long X11 history. The desig
 | Mod4 | Super |
 | Mod5 | AltGr / Level3 |
 
-Several choices are deliberate.
-
 ## Super is not Meta
 
-Modern desktop conventions often blur Windows, Command, GUI, Super, and Meta.
+Super belongs primarily to desktop and window-manager behavior. Meta is a
+separate application and terminal command space.
 
-This keyboard keeps Super and Meta conceptually separate.
-
-- **Super** belongs primarily to desktop and window-manager behavior.
-- **Meta** provides an application and terminal command namespace.
-
-The physical and XKB transport is complete: the Any/Meta hold emits `KC_APP`,
-Linux/XKB names it `<COMP>`, and Nova maps it to `Meta_R` with virtual Meta on
-real Mod3. `wev` sees the modifier correctly.
-
-Consumers are a separate problem. Traditional terminal input does not carry a
-general “Meta” bit; it usually represents Meta as an Escape prefix. Current
-MACE behavior is therefore intentionally recorded rather than generalized:
-
-| Consumer | Meta+D | Alt+D |
-| --- | --- | --- |
-| xterm 406 + Bash Readline | sends `ESC d`; native Readline Meta+D works | plain `d` in the tested configuration |
-| Ptyxis/VTE without the adapter | plain `d`; Mod3 is discarded at the application boundary | sends `ESC d` |
-| Ptyxis + Nova semantic-Meta adapter + tmux | exact Meta+D is intercepted and translated to tmux detach | remains the ordinary Alt path |
-
-The accepted GNOME Shell adapter is deliberately narrow. Mutter owns the
-exact `<Mod3>d` binding before Ptyxis loses Mod3, confirms that Ptyxis is
-focused, and injects tmux's existing `Ctrl+B`, `D` command through `ydotool`.
-It makes one tested gesture work; it is not general Bash Meta support and does
-not claim that Meta works natively in all terminals or applications.
-
-Future consumers must either bind real Mod3 before the lossy boundary or use a
-protocol and application stack that preserves semantic Meta end to end.
+Holding the Any/Meta key produces semantic Meta on real Mod3. Some application
+stacks preserve that distinction better than others. Where an application loses
+real Mod3, a narrow compositor-side adapter may be used for a specific gesture
+rather than collapsing Meta back into Alt or Super. The current consumer details
+and acceptance evidence belong in `docs/keyboard-architecture.md`.
 
 ## Hyper is not assigned a real modifier bit
 
-Hyper is exposed as `Hyper_L`, but in this architecture it is primarily a trigger observed by a daemon.
-
-It does not need to consume one of the limited XKB modifier bits unless a future implementation requires that.
+Hyper is exposed as `Hyper_L`, but its command dispatcher observes the physical
+event below XKB. It therefore does not need to consume one of the limited real
+modifier bits.
 
 ## NumLock does not own Mod2
 
-Traditional XKB mappings often attach NumLock to Mod2.
+The physical NumLock position toggles the mouse layer; the keypad is intended to
+remain numeric. Genuine NumLock semantics are therefore not part of this design,
+leaving Mod2 available for Level5. The exact host-state protections belong in
+the technical architecture document.
 
-This design does not use genuine NumLock semantics. The keypad is intended to remain numeric, while the physical NumLock key toggles a mouse layer.
-
-Mod2 is therefore available for Level5.
-
-GNOME is configured with both `remember-numlock-state` and `numlock-state`
-false so it does not restore stale NumLock state into raw Mod2. A managed
-GNOME Shell sentinel alerts if Mod2 is ever latched or locked unexpectedly;
-it does not rewrite legitimate depressed Mod2 while the Level5 key is active.
+---
 
 ---
 
@@ -601,52 +457,43 @@ Right Shift itself is now a plain Shift key. An earlier tap/hold arrangement mad
 
 # 15. Hyper: a command namespace
 
-The Hyper key is intended to arm a personal command-dispatch mode.
+The Hyper key arms a personal command namespace.
 
 ```text
 Hyper down      → dispatcher armed
-Hyper + a       → run ~/.hyper/a.sh
-Hyper + 1       → run ~/.hyper/1.sh
+Hyper + key     → run the matching user command
 Hyper up        → dispatcher idle
 ```
 
-There are no command prefixes, no sequence buffers, and no timing grammar.
+There are no prefixes, sequence buffers, or timing grammar. Each alphanumeric
+key pressed while Hyper is held is one complete command event.
 
-Every alphanumeric key pressed while Hyper is held represents one complete command event.
-
-The daemon’s design boundary is intentionally narrow:
+The daemon stays deliberately narrow:
 
 ```text
 key event → executable script
 ```
 
-The daemon should not become a macro language, application controller, command palette, shell, keyboard remapper, or desktop environment.
-
-Action-specific behavior belongs in the scripts.
-
-That keeps the dispatcher stable while allowing the command vocabulary to grow independently.
-
-## Why evdev?
-
-Wayland intentionally restricts arbitrary global keyboard interception.
-
-`hyperkeyd` reads Linux evdev devices directly, below the compositor. That makes it independent of X11-style global-hotkey APIs, but it requires permission to read the selected `/dev/input/event*` device.
+The scripts own the actions. The exact current Hyper command vocabulary is not
+listed here because it can change independently of the keyboard architecture.
 
 ## Current limitation: listening is not suppression
 
-The current daemon is a passive listener. It does not grab the keyboard and does not prevent a command key from also reaching the desktop.
+HyperKeyD currently listens to evdev without grabbing and replacing the keyboard
+stream. A Hyper command can therefore execute **and** allow its ordinary command
+letter to reach the focused application.
 
-A complete filtering implementation would need to:
+That leakage is predictable enough to work around in daily use, but removing it
+would be a much larger architectural commitment. True suppression would require
+a component in the critical input path to grab the physical keyboard, consume
+Hyper command events, and faithfully re-emit every allowed ordinary event
+through a virtual keyboard.
 
-1. grab the physical keyboard;
-2. consume Hyper command events;
-3. create a virtual keyboard through `uinput`;
-4. re-emit all allowed non-command events;
-5. remain exceptionally reliable, because failure would affect the primary input path.
+Until that tradeoff is worth making, Hyper remains a command plane with a known
+leakage edge. Exact HyperKeyD implementation and deployment details belong in
+the `hyperkeyd` repository.
 
-That is a much more consequential design than passive listening.
-
-The existing project therefore demonstrates the command-dispatch model without prematurely turning itself into a critical input filter.
+---
 
 ---
 
@@ -708,18 +555,10 @@ Focused application receives the character
 
 ## Runtime implementation boundary
 
-The exact script belongs to `press-the-any-key`, not to this tour. Its current
-implementation checks the `ydotool.service` state, starts or resets it when
-necessary, chooses one random alphanumeric character, and retries the
-`ydotool type` request during the brief daemon-startup window. Keeping the
-executable source in one repository prevents a copied code listing here from
-quietly becoming obsolete.
-
-GNOME listens for the physical shortcut. `ydotoold` listens for synthetic-input requests. Ansible installs and reconciles the pieces but does not participate in each keypress.
-
-The visible result is one random character.
-
-The machinery includes QMK, evdev naming, XKB/GNOME shortcuts, systemd, a Unix socket, `ydotool`, and `/dev/uinput`.
+The exact script and service behavior belong to `press-the-any-key`, not to
+this tour. The architectural point is that the physical key emits a stable
+identity, GNOME recognizes that identity as a shortcut, and host-side synthetic
+input produces one random alphanumeric character in the focused application.
 
 This is an intentionally disproportionate engineering effort in service of a joke, which is part of why it is worth having.
 
@@ -727,146 +566,74 @@ This is an intentionally disproportionate engineering effort in service of a jok
 
 # 17. The mouse layer
 
-The physical NumLock key does not toggle keypad meaning.
+The physical NumLock key does not toggle keypad meaning. The keypad remains a
+numeric keypad.
 
-It toggles a dedicated QMK mouse layer:
-
-```c
-TG(MOUSE)
-```
-
-The keypad remains numeric because XKB gives every keypad key one explicit
-`ONE_LEVEL` numeric symbol. The physical NumLock position emits no NumLock
-event at all.
-
-When the mouse layer is active:
-
-- the physical arrow cluster becomes pointer movement;
-- selected navigation keys become mouse buttons;
-- either Shift key can momentarily activate a scroll sublayer;
-- the same directional controls then become wheel movement.
-
-## Mouse layer concept
+Instead, that physical position toggles a firmware mouse layer:
 
 ```text
 NumLock position → toggle mouse layer
 
 On mouse layer:
     arrows       → pointer movement
-    Insert/Home/PageUp-style positions → mouse buttons
-    hold Shift   → scroll sublayer
+    navigation positions → mouse buttons
+    hold either Shift    → scroll sublayer
     arrows       → wheel movement
 ```
 
-The relevant QMK layer uses:
+This is deliberate: the keypad should be a keypad, while pointer control should
+be an explicit alternate mode rather than the traditional NumLock competition
+between numbers and navigation.
 
-```c
-KC_MS_U
-KC_MS_D
-KC_MS_L
-KC_MS_R
-
-KC_BTN1
-KC_BTN2
-KC_BTN3
-```
-
-The scroll sublayer uses:
-
-```c
-KC_WH_U
-KC_WH_D
-KC_WH_L
-KC_WH_R
-```
-
-Both Shift positions expose `MO(SCROLL)` while the mouse layer is active, making scrolling momentary and symmetrical.
-
-## Why preserve the numeric keypad?
-
-The keypad should be a keypad.
-
-Traditional NumLock behavior turns the same physical keys into two competing layouts. This design instead preserves numbers continuously and obtains pointer control through an explicit layer.
-
-That makes the mode change intentional and keeps numeric entry predictable.
-
-## Host-state isolation and the layer lamp
-
-The earlier firmware reassertion watchdog has been removed. It produced
-repeated synthetic NumLock events and could interfere with key repeat and
-scrolling. The accepted design removes every intentional producer instead of
-fighting host state continuously:
-
-- QMK sends no `KC_NUM_LOCK` event.
-- XKB maps `<NMLK>` to `VoidSymbol` and removes `Num_Lock` from modifier maps.
-- The keypad uses one group and one numeric level, so no lock can turn it into
-  a navigation cluster.
-- GNOME does not remember or restore NumLock state.
-- A GNOME Shell sentinel alerts on unexpected latched or locked Mod2 without
-  trying to “heal” a legitimate depressed Level5 hold.
-
-The physical NumLock lamp now reports firmware pointer-layer state:
+The physical NumLock lamp reports the firmware layer rather than host NumLock:
 
 | Firmware state | NumLock lamp |
 | --- | --- |
 | Base | off |
 | Mouse | solid |
-| Scroll | blinking every 250 ms |
+| Scroll | blinking |
 
-The lamp does not mirror host NumLock. This gives the repurposed control a
-useful, glanceable status indicator while leaving Level5's Mod2 bit alone.
+The exact QMK keycodes, host-state isolation, and implementation history belong
+in the firmware and technical architecture documentation.
+
+---
 
 ---
 
 # 18. Level5 and the first eight-level canary
 
-AltGr supplies Levels 3 and 4.
+AltGr supplies Levels 3 and 4. A separate Level5 selector extends selected keys
+through Levels 5–8 in the same XKB group.
 
-A separate Level5 modifier is active through `PB_29`, `<I692>`,
-`ISO_Level5_Shift`, and real Mod2.
+The B key was the first deliberate eight-level canary. Its purpose was to prove
+the selector architecture without forcing speculative assignments onto every
+other key. Empty higher-level slots are useful spare capacity, not unfinished
+work.
 
-The B key is the first accepted eight-level canary:
-
-```text
-b  B  β  α  🐇  🐰  🥬  🥕
-```
-
-It proves that Level5, Shift, and AltGr can select Levels 5 through 8 in the
-same XKB group. The canary was compiled offline, installed reproducibly,
-survived reboot, and passed live typing acceptance.
-
-This does not require every key to be expanded immediately. An intentional
-spare is still more valuable than a symbol chosen merely because a slot
-exists. `docs/symbol-vocabulary.md` owns the placement doctrine and the exact
-current inventory.
+The current Level5 assignments belong in `files/us-nova`; the placement
+doctrine belongs in `docs/symbol-vocabulary.md`.
 
 ---
 
-# 19. Whisper: the prepared interface fulfilled
+---
 
-`PB_28` is reserved for Whisper or push-to-talk speech input.
+# 19. Whisper: speech input on a real key
 
-The physical position is already chosen and the firmware identity is already
-stable. The host-side implementation now lives in
-[`wdcallahan/whisper-ptt`](https://github.com/wdcallahan/whisper-ptt).
+Whisper has a dedicated physical key with a stable programmable-button identity.
 
-This demonstrates the architecture’s central principle especially well.
+Holding it begins local speech capture. Releasing it finishes the utterance,
+transcribes it, verifies the intended application context, and inserts the text
+without pressing Enter. Notifications make the recording, transcription, and
+attention states visible.
 
-The keyboard exposed a durable identity before the software behavior existed.
-The later service consumed that identity without a firmware remap, a borrowed
-function key, or an XKB modifier.
+Whisper is a particularly good example of the architecture's central rule. The
+physical key and its identity were prepared independently of the host-side
+speech implementation, so the software could evolve without remapping firmware.
 
-The accepted service listens directly for `KEY_MACRO28` press and release.
-Press begins an exact-source RØDE PipeWire recording. Release finalizes the
-audio, transcribes locally with the verified English `base.en` model on the
-CPU, checks that GNOME focus still matches, and injects the result through
-`ydotool` without pressing Enter. Desktop notifications expose recording,
-transcription, completion, no-speech, and attention states.
+The exact microphone, model, audio pipeline, focus checks, deployment, and
+runtime diagnostics belong in `wdcallahan/whisper-ptt`.
 
-The original `docs/designs/whisper-ptt-boundary.md` is therefore no longer a
-promise about future work. It is the record of a prepared interface whose
-implementation validated the separation between physical identity and host
-meaning.
+---
 
 ---
 
@@ -964,62 +731,32 @@ Each component is narrow enough to explain:
 
 # 22. What is authoritative, and what is explanatory?
 
-This document is a guided tour. It is intended to be readable by humans and models.
+This document is the readable whole-system tour. It explains what Nova's
+keyboard does, how the pieces fit together, and why the design has this shape.
 
-The canonical copy of this tour lives in `x1_keyboard_layout`. The
-repositories remain authoritative for exact implementation details, while the
-ChatGPT Library copies are synchronized reading and sharing mirrors.
+It is deliberately **not** the live status ledger for every implementation
+project.
 
-## `lemokey-x2-qmk`
+Use these sources when exact current detail matters:
 
-Authoritative for:
+- `files/us-nova` — current XKB symbol and modifier assignments.
+- `docs/symbol-vocabulary.md` — symbol-placement doctrine and rationale.
+- `docs/keyboard-architecture.md` — exact technical behavior, boundaries, and
+  acceptance evidence.
+- `wdcallahan/lemokey-x2-qmk` — firmware, physical mapping, tap/hold, and
+  pointer layers.
+- `wdcallahan/press-the-any-key` — Any Key implementation.
+- `wdcallahan/hyperkeyd` — Hyper command dispatcher implementation.
+- `wdcallahan/whisper-ptt` — speech-input implementation.
 
-- current physical keymap;
-- programmable-button emission;
-- deterministic tap/hold implementation;
-- mouse and scroll layers;
-- NumLock-position layer toggling and lamp behavior;
-- firmware build and flashing.
+The canonical copy of this tour lives in `x1_keyboard_layout`. ChatGPT Library
+copies are reading and sharing mirrors, not independent authorities.
 
-## `x1_keyboard_layout`
+A change to an installer, test procedure, service implementation, or project
+milestone does not require changing this tour. A change to what the keyboard
+*means or does for Nova* does.
 
-Authoritative for:
-
-- XKB keysyms and symbol levels;
-- modifier mappings;
-- GNOME input options;
-- the Level5 and semantic-Meta GNOME Shell extensions;
-- the complete architecture rationale;
-- installation of the host-side layout.
-
-## `press-the-any-key`
-
-Authoritative for:
-
-- the Any Key script;
-- `ydotoold` user service;
-- GNOME shortcut reconciliation;
-- Ansible deployment.
-
-## `hyperkeyd`
-
-Authoritative for:
-
-- evdev device handling;
-- Hyper arming and command dispatch;
-- CLI behavior;
-- script execution;
-- permissions and service examples;
-- current passive-listener limitations.
-
-## Whisper/PTT
-
-`wdcallahan/whisper-ptt` is authoritative for capture, transcription,
-notification, focus-safety, injection, deployment, and runtime diagnostics.
-`x1_keyboard_layout/docs/designs/whisper-ptt-boundary.md` preserves the
-cross-project keyboard boundary and summarizes the accepted MACE result.
-
-This tour intentionally omits build systems, generated files, complete installers, full command-line parsers, packaging details, and most service boilerplate. Those details matter when maintaining a repository, but they are not necessary for understanding the keyboard as a designed system.
+---
 
 ---
 
@@ -1160,27 +897,29 @@ hold physical Whisper key
     ↓
 PB_28 / KEY_MACRO28
     ↓
-record exact RØDE PipeWire source
+record speech locally
     ↓
-release and transcribe with local base.en
+release and transcribe
     ↓
-verify GNOME focus
+verify application context
     ↓
-ydotool types reviewed text without Enter
+insert text without Enter
 ```
 
-## Eight-level B canary
+## Eight-level text selection
 
 ```text
-B                              → b
-Shift + B                      → B
-AltGr + B                      → β
-Shift + AltGr + B              → α
-Level5 + B                     → 🐇
-Shift + Level5 + B             → 🐰
-AltGr + Level5 + B             → 🥬
-Shift + AltGr + Level5 + B     → 🥕
+key                              → Level 1
+Shift + key                      → Level 2
+AltGr + key                      → Level 3
+Shift + AltGr + key              → Level 4
+Level5 + key                     → Level 5
+Shift + Level5 + key             → Level 6
+AltGr + Level5 + key             → Level 7
+Shift + AltGr + Level5 + key     → Level 8
 ```
+
+For the current character assigned at any of those levels, read `files/us-nova`.
 
 ## Mouse layer
 
