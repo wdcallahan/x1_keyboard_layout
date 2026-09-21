@@ -499,68 +499,37 @@ the `hyperkeyd` repository.
 
 # 16. The Any Key: industrial-grade chaos
 
-The Any Key began as a joke:
+There was once an unused key.
 
-> Put an “Any Key” label on a physical key, and make it type a random character.
+That is difficult to imagine now, but when Nova still had one, an old family
+joke suggested what to put on it. His sister loved the familiar computer prompt
+joke: “It says to press the Any key. Where is the Any key?”
 
-The implementation is deliberately real.
+So Nova labeled one **Any**.
 
-On this keyboard, tapping the Any/Meta dual-role key emits:
+That immediately raised a better question: if an Any key really existed, what
+should it actually do?
 
-```text
-PB_26
-    ↓
-KEY_MACRO26
-    ↓
-XF86Macro26
-```
+The answer he settled on was a random character generator. Press Any and the
+computer supplies a random alphanumeric character.
 
-GNOME listens for `XF86Macro26` as a custom shortcut and launches:
+It was not solving an important productivity problem. Nova built it because it
+was funny, because he wanted it, and because figuring out how to make a physical
+key cause software on the host to generate input was a useful way to learn how
+the whole input stack fit together.
 
-```text
-~/bin/any.sh
-```
+That experiment opened up ideas that became useful elsewhere. Once the path
+from a stable physical key identity to host software and then back into synthetic
+input made sense, more practical features became easier to imagine and build.
+Whisper's ability to place locally transcribed speech into the active
+application is one descendant of that understanding.
 
-The script selects one random character from:
+The Any key is therefore deliberately nonessential. Someone could reproduce the
+rest of Nova's keyboard and leave it out without losing the architecture. Nova
+keeps it because he learned from it, enjoys having it, and it still occasionally
+comes in handy.
 
-```text
-a-z
-A-Z
-0-9
-```
-
-It then asks `ydotool` to type that character.
-
-## Runtime path
-
-```text
-Physical Any key
-    ↓
-PB_26 / KEY_MACRO26 / XF86Macro26
-    ↓
-GNOME custom shortcut
-    ↓
-~/bin/any.sh
-    ↓
-ydotool type "<random character>"
-    ↓
-$XDG_RUNTIME_DIR/.ydotool_socket
-    ↓
-ydotoold
-    ↓
-/dev/uinput
-    ↓
-Focused application receives the character
-```
-
-## Runtime implementation boundary
-
-The exact script and service behavior belong to `press-the-any-key`, not to
-this tour. The architectural point is that the physical key emits a stable
-identity, GNOME recognizes that identity as a shortcut, and host-side synthetic
-input produces one random alphanumeric character in the focused application.
-
-This is an intentionally disproportionate engineering effort in service of a joke, which is part of why it is worth having.
+The exact implementation belongs in `wdcallahan/press-the-any-key`.
 
 ---
 
