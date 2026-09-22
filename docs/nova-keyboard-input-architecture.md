@@ -756,15 +756,6 @@ everything else.
 The point is not architectural purity. It is that each feature can live where it
 is easiest to understand, change, and rebuild.
 
-## Some of it is here because it is delightful
-
-Not every part of a personal keyboard needs a productivity justification. The
-Any Key is the clearest example: it began as a joke, taught Nova a great deal
-about the input stack, and became just useful enough to keep.
-
-The same keyboard can contain serious engineering, obscure symbols, personal
-habits, and one carefully engineered way to press the wrong key on purpose.
-
 ---
 
 # 21. Closing: the keyboard as a personal language
