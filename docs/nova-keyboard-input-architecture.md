@@ -179,9 +179,10 @@ detail matters, the project listed above is where to look.
 
 # 5. The extra buttons and their changeable legends
 
-The keyboard came with extra physical buttons that did not correspond to
-ordinary standard keys. There was no obvious factory legend to put on them
-because there was no predefined job for them to name.
+Outside the ordinary main typing area, the X2 provides extra physical buttons
+that do not correspond to standard typing keys. Those are the relegendable
+controls. There was no obvious factory legend to put on them because there was
+no predefined job for them to name.
 
 That made relegendable keycaps a natural fit.
 
@@ -538,8 +539,11 @@ the `hyperkeyd` repository.
 
 There was once an unused key.
 
-That is difficult to imagine now, but when Nova still had one, an old family
-joke suggested what to put on it. His sister loved the familiar computer prompt
+That is difficult to imagine on the ordinary main layout now, but when Nova
+still had an unused ordinary key position, an old family joke suggested what to
+put on it. The keyboard still has plenty of *capacity* elsewhere—relegendable
+controls and unfilled higher text levels—but that is different from having an
+ordinary key sitting around with no job. His sister loved the familiar computer prompt
 joke: “It says to press the Any key. Where is the Any key?”
 
 So Nova labeled one **Any**.
