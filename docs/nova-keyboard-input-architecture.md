@@ -739,7 +739,7 @@ implementation.
 
 # 21. Closing: the keyboard as a personal language
 
-Most keyboards arrive with a vocabulary already decided for them.
+Most keyboards arrive with their vocabulary already decided for them.
 
 This one has grown a vocabulary of its own.
 
@@ -747,14 +747,19 @@ Ordinary typing is still ordinary typing, but around it are extra ways to say
 things: additional symbol levels, Compose sequences, command keys, mouse control,
 local dictation, and even one key whose job is to choose another key at random.
 
-The design is technical because the keyboard crosses several layers of the
-system, but the reason for all of that engineering is personal. Each unusual
-feature exists because Nova wanted to be able to do something from the keyboard
-that an ordinary keyboard did not make convenient enough.
+None of this was built merely to prove that it could be done. Nova uses this
+keyboard. These features solve real problems, support real habits, and make the
+machine fit the person using it instead of asking the person to fit the machine.
 
-Some of those wants were practical. Some were about control or locality. Some
-were about symbols that deserved to be easy to type. And one began as a family
-joke.
+That is worth being proud of.
+
+The design is technical because it crosses several layers of the system, but the
+reason for all of that engineering is personal. Some features grew from a need
+for speed or convenience. Some came from wanting more control or keeping work
+local. Some put useful symbols within easy reach. Some exist because the ordinary
+way of doing something was irritating enough to deserve a better one.
+
+And one began as a family joke.
 
 The Any Key may be the best summary of the whole project. It was not necessary.
 It was funny enough to build anyway, useful enough to teach something important,
@@ -762,7 +767,11 @@ and just useful enough afterward to earn its place.
 
 That is a great deal of engineering to type the wrong character on purpose.
 
-It is also a keyboard that unmistakably belongs to its owner.
+This document exists because the keyboard is worth explaining. Nova could tell
+the story himself—and in a sense, that is what this tour is meant to preserve:
+not just what each part does, but why somebody cared enough to build it this way.
+
+It is a keyboard that unmistakably belongs to its owner.
 
 ---
 
