@@ -4,13 +4,16 @@
 
 This is not merely a custom keyboard layout.
 
-It is a layered input architecture built around one central idea:
+It is a layered input architecture in which different parts of the system do
+different jobs.
 
-> **A physical key’s identity should be stable, while its meaning should be assigned at the most appropriate software layer.**
+The firmware knows about the physical keyboard and the behaviors that belong
+there. Linux carries key events to the host. XKB interprets text and modifiers.
+GNOME and small host-side programs handle desktop and application behavior.
 
-The keyboard firmware does not need to know that a particular key is “Any,” “Hyper,” “Compose,” “Meta,” or “Whisper.” It can emit a neutral, observable identity. Linux carries that identity as an input event. XKB, GNOME, or a host-side daemon then decides what the event means on this machine, at this moment.
-
-That separation makes the keyboard easier to rebuild, easier to experiment with, and much less likely to require a firmware change every time a key acquires a new job.
+Some special keys travel through those layers using neutral programmable-button
+events such as `PB_n`. Those are useful transport identities, but they are not a
+promise that every key's purpose can change without reflashing the keyboard.
 
 It also makes possible a remarkably high-effort way to achieve pure chaos: one dedicated key whose purpose is to type a random character.
 
@@ -87,23 +90,18 @@ This system asks several separate questions:
 
 ---
 
-# 2. Stable identities instead of hardcoded meanings
+# 2. Programmable-button identities
 
-Normal typing keys do not need much indirection. The physical A key can produce an A-related key event, and XKB can turn it into `a`, `A`, `ä`, or `Ä` depending on the active shift level.
+Normal typing keys already have familiar identities. The physical A key produces
+an A-related event, and XKB can turn that into different text depending on the
+selected level.
 
-Extra programmable keys are different.
+The keyboard's extra and special-purpose controls sometimes need something more
+neutral. QMK's programmable-button namespace gives them clean events that Linux
+can observe without pretending that the button is already a media key, browser
+key, power key, or some other control with built-in desktop expectations.
 
-A relegendable key may launch OBS today, control a light tomorrow, and become a speech-to-text control later. Reflashing the keyboard every time its job changes would turn an ordinary host-side reassignment into firmware maintenance.
-
-For those keys, the firmware should emit an identity that is:
-
-- distinct;
-- visible to Linux tools;
-- semantically neutral;
-- unlikely to be captured by the desktop;
-- and stable even when the keycap and host binding change.
-
-QMK’s programmable-button namespace fits that purpose.
+For example:
 
 ```text
 QMK:          PB_26
@@ -111,17 +109,16 @@ Linux evdev:  KEY_MACRO26
 XKB/GNOME:    XF86Macro26
 ```
 
-These are three names for the same event at three different layers.
+Those are three names for the same event as it moves through three layers.
 
-A QMK programmable button is **not** a QMK macro.
+A QMK programmable button is **not** a QMK macro. A firmware macro performs
+behavior inside the keyboard. A programmable button merely reports that a
+particular programmable button was pressed.
 
-A firmware macro performs behavior inside the keyboard—perhaps sending a sequence of keys. A programmable button merely says:
-
-> “Programmable button number 26 was pressed.”
-
-The host remains free to decide what button 26 means.
-
-That distinction is the foundation of the relegendable and special-purpose keys.
+That neutral event is useful when the host owns the eventual behavior. It does
+not mean that every physical key on the board has an immutable identity, or that
+changing a relegendable key can always be done without changing and reflashing
+the firmware.
 
 ---
 
@@ -178,26 +175,21 @@ detail matters, the project listed above is where to look.
 
 ---
 
-# 5. The physical philosophy: stable positions, changeable legends
+# 5. The extra buttons and their changeable legends
 
-The keyboard includes relegendable keys whose printed labels can be changed.
+The keyboard came with extra physical buttons that did not correspond to
+ordinary standard keys. There was no obvious factory legend to put on them
+because there was no predefined job for them to name.
 
-A relegendable key has four layers of identity:
+That made relegendable keycaps a natural fit.
 
-| Property | Stable or changeable? |
-| --- | --- |
-| Physical position | Stable |
-| Firmware identity | Stable |
-| Printed legend | Changeable |
-| Host-side binding | Changeable |
+Once Nova decides what one of those buttons should do, its legend can say so. If
+that decision changes later, the project can be changed, the keyboard reflashed,
+and the legend changed with it.
 
-For example, a key may permanently emit `PB_17`.
-
-Today, its keycap and GNOME binding might identify it as a volume control. Later it might launch OBS. The firmware identity does not need to change.
-
-This prevents a keyboard from becoming frozen around the first set of ideas that happened to be useful when the firmware was written.
-
-The architecture preserves room for future curiosity.
+The important flexibility is physical and practical: an extra button does not
+have to spend the rest of its life wearing the first label anybody happened to
+give it.
 
 ---
 
@@ -709,52 +701,37 @@ It assigns each problem to the layer best suited to it.
 # 20. Why these choices were made
 
 The keyboard did not start from a list of universal design rules. Its shape came
-from a series of practical decisions about how Nova wanted it to behave.
+from practical decisions about what worked well in daily use.
 
-## Stable key identity, changeable host meaning
+## Deterministic dual-role keys instead of timing thresholds
 
-The relegendable and special-purpose keys use stable programmable identities
-because their jobs may change without the physical keyboard changing. A key can
-keep the same firmware identity while its legend or host-side action changes.
+Nova tried the usual timing-based tap/hold approach first. In actual use it was
+frustrating: the result depended on timing, created repeated little failures,
+and demanded that he adapt his typing to the keyboard's threshold.
 
-That is also why these keys use neutral programmable-button identities rather
-than masquerading as sleep, brightness, browser, media, or other keys that may
-already carry desktop behavior.
+The custom behavior removes the timing guess entirely. Press and release the
+dual-role key by itself and it is a tap. Press another key while holding it and
+it becomes the hold action immediately.
 
-## Deterministic dual-role keys instead of timed guesses
+That rule proved intuitive from the start. There is no tapping term to learn and
+no need to think about how long a key has been held. The same physical gesture
+produces the same interpretation each time.
 
-Dual-role keys were useful, but the usual tap-versus-hold schemes make the
-decision partly from elapsed time. Nova did not want the keyboard guessing from
-a tapping threshold.
+The implementation lives in firmware because that is where this keyboard makes
+the tap/hold decision. The reason for building it was not a doctrine that all
+tap/hold logic belongs in firmware; it was to replace a timing-based behavior
+that worked badly for Nova with one that simply worked.
 
-The custom behavior uses the chord itself as the evidence. Press and release the
-key alone and it is a tap. Press another key while holding it and it becomes the
-hold action immediately.
-
-That logic lives in the keyboard firmware because that is where Nova chose to
-make the physical tap/hold decision. The important point is not that firmware is
-the only place such behavior could ever be implemented; it is that this
-implementation gives the keyboard the deterministic behavior he wanted without
-depending on a desktop timing heuristic.
-
-## Extension rather than replacement
-
-Nova wanted more text available from the keyboard without giving up familiar US
-typing. Levels 1 and 2 therefore remain the ordinary base and shifted layout,
-while AltGr, Level5, and Compose extend the vocabulary beyond it.
-
-The result is still an ordinary keyboard when used ordinarily. The additional
-language appears when Nova deliberately asks for it.
-
-## Different jobs can live in different places
+## Different jobs live in different places
 
 Some behaviors depend on the physical keyboard, some on XKB text interpretation,
 and some on applications or host software. The projects are separated along
-those boundaries so that changing one kind of behavior does not require changing
-everything else.
+those boundaries so that each feature can be implemented where the information
+and tools it needs are available.
 
-The point is not architectural purity. It is that each feature can live where it
-is easiest to understand, change, and rebuild.
+That division is practical rather than ideological. Section 4 names the projects
+and their responsibilities; the individual projects contain the exact
+implementation.
 
 ---
 
