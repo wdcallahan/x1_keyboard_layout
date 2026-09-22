@@ -706,48 +706,64 @@ It assigns each problem to the layer best suited to it.
 
 
 
-# 20. Design principles worth preserving
+# 20. Why these choices were made
 
-The exact hardware and software will change. The principles are more durable.
+The keyboard did not start from a list of universal design rules. Its shape came
+from a series of practical decisions about how Nova wanted it to behave.
 
-## Separate identity from meaning
+## Stable key identity, changeable host meaning
 
-A key should not require new firmware merely because its host-side job changes.
+The relegendable and special-purpose keys use stable programmable identities
+because their jobs may change without the physical keyboard changing. A key can
+keep the same firmware identity while its legend or host-side action changes.
 
-## Put timing-sensitive physical behavior in firmware
+That is also why these keys use neutral programmable-button identities rather
+than masquerading as sleep, brightness, browser, media, or other keys that may
+already carry desktop behavior.
 
-Tap/hold and layer behavior should remain deterministic even when desktop software is busy or absent.
+## Deterministic dual-role keys instead of timed guesses
 
-## Keep text selection distinct from command dispatch
+Dual-role keys were useful, but the usual tap-versus-hold schemes make the
+decision partly from elapsed time. Nova did not want the keyboard guessing from
+a tapping threshold.
 
-AltGr and Level5 select symbols. Hyper and Meta select commands.
+The custom behavior uses the chord itself as the evidence. Press and release the
+key alone and it is a tap. Press another key while holding it and it becomes the
+hold action immediately.
 
-## Preserve ordinary typing
+That logic lives in the keyboard firmware because that is where Nova chose to
+make the physical tap/hold decision. The important point is not that firmware is
+the only place such behavior could ever be implemented; it is that this
+implementation gives the keyboard the deterministic behavior he wanted without
+depending on a desktop timing heuristic.
 
-The base layout remains recognizable US typing. Custom power lives on additional levels and dedicated keys.
+## Extension rather than replacement
 
-## Use neutral identities for relegendable controls
+Nova wanted more text available from the keyboard without giving up familiar US
+typing. Levels 1 and 2 therefore remain the ordinary base and shifted layout,
+while AltGr, Level5, and Compose extend the vocabulary beyond it.
 
-A programmable key should not masquerade as sleep, brightness, browser back, or another event with inherited behavior.
+The result is still an ordinary keyboard when used ordinarily. The additional
+language appears when Nova deliberately asks for it.
 
-## Keep daemons narrow
+## Different jobs can live in different places
 
-HyperKeyD dispatches scripts. It does not need to know what those scripts do.
+Some behaviors depend on the physical keyboard, some on XKB text interpretation,
+and some on applications or host software. The projects are separated along
+those boundaries so that changing one kind of behavior does not require changing
+everything else.
 
-## Make configuration reproducible
+The point is not architectural purity. It is that each feature can live where it
+is easiest to understand, change, and rebuild.
 
-Ansible and documented host configuration turn a clever workstation trick into something that can be rebuilt.
+## Some of it is here because it is delightful
 
-## Leave useful space unfilled
+Not every part of a personal keyboard needs a productivity justification. The
+Any Key is the clearest example: it began as a joke, taught Nova a great deal
+about the input stack, and became just useful enough to keep.
 
-Not every available level or programmable identity has to be populated merely
-because it exists. Unused capacity can remain available until a real use earns
-it. The architecture should make future additions possible without forcing
-speculative assignments today.
-
-## Permit delight
-
-A system used every day is allowed to contain jokes, strange historical letters, pointing hands, an irony mark, and one meticulously engineered chaos key.
+The same keyboard can contain serious engineering, obscure symbols, personal
+habits, and one carefully engineered way to press the wrong key on purpose.
 
 ---
 
