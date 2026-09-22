@@ -211,7 +211,6 @@ The numbering is spatially meaningful rather than merely packed into the lowest 
 | Menu transport | `KC_MENU` |
 | Whisper | `PB_28` |
 | Level5 | `PB_29` |
-| Safe spare | `PB_30` |
 
 The top row uses `PB_13` through `PB_24` partly because those numbers visually echo F13 through F24.
 
