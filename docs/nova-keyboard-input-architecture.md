@@ -69,7 +69,7 @@ Each layer has a deliberately limited job.
 | Layer | Responsibility |
 | --- | --- |
 | Physical keyboard | Provide a position, switch, and keycap. |
-| QMK firmware | Emit a stable key identity and implement timing-sensitive physical behavior. |
+| QMK firmware | Emit key events and implement the physical behaviors handled in firmware. |
 | Linux input layer | Carry key events from the device into the operating system. |
 | XKB | Convert key identities into text symbols, modifiers, and named keysyms. |
 | GNOME | Handle desktop shortcuts and input options. |
@@ -83,7 +83,7 @@ A conventional layout asks, “What character does this key type?”
 This system asks several separate questions:
 
 1. What physical key was pressed?
-2. What stable identity did the firmware emit?
+2. What event did the firmware emit?
 3. Should the event select a text symbol, act as a modifier, trigger a command, or change a layer?
 4. Which software component is responsible for that meaning?
 5. Should anything reach the focused application?
@@ -134,7 +134,7 @@ But they are still function keys. They carry a historical and conceptual meaning
 
 F13 through F24 remain valuable fallback identities. They are simply not the first choice when QMK and Linux can carry a dedicated programmable-button event cleanly.
 
-Other possible spare namespaces—media keys, browser keys, language keys, power keys, and obscure workstation keys—are less attractive because desktops may already assign behavior to them. A neutral key should be boring by default.
+Other possible spare namespaces—media keys, browser keys, language keys, power keys, and obscure workstation keys—are less attractive because desktops may already assign behavior to them. The appeal of a neutral programmable-button event is precisely that it is boring by default.
 
 ---
 
@@ -153,17 +153,19 @@ of behavior belong at different layers.
 
 They are separate on purpose.
 
-Firmware owns things that depend on the physical keyboard itself: key identity,
-tap/hold decisions, and hardware layers. Those behaviors should remain reliable
-even when desktop software is busy or absent.
+In this project, firmware handles the physical behaviors that belong closest to
+the keyboard itself: emitted key events, the custom tap/hold decision, and
+hardware layers. That keeps those particular behaviors independent of desktop
+software.
 
 XKB owns text interpretation: symbols, shift levels, and modifier meanings. It
 is excellent at choosing what a key means as text, but it is not a general
 command engine.
 
-Desktop and host-side software own behaviors that depend on applications or the
-operating system: launching commands, dictation, shortcuts, and generated input.
-Those jobs can change without reflashing the keyboard.
+Desktop and host-side software handle behaviors that depend on applications or
+the operating system: launching commands, dictation, shortcuts, and generated
+input. When a change is confined to that host-side behavior, the keyboard
+firmware does not need to change with it.
 
 Keeping those boundaries means an ordinary host-side change does not become a
 firmware change, while timing-sensitive physical behavior does not depend on a
@@ -245,7 +247,7 @@ Space | Whisper | Menu/Right Control | Any/Meta | Compose/AltGr
 The arrangement is ergonomic rather than decorative.
 
 - **Whisper** is a high-frequency control, so it earns a high-honor position near the spacebar.
-- **Control and Meta** must remain easy to chord with other command keys.
+- **Control and Meta** are placed where they remain easy to chord with other command keys.
 - **Compose and AltGr** occupy a tactile outside edge, while AltGr remains close enough to Shift for fourth-level symbols.
 - **Any** receives a real physical position because a dedicated chaos key deserves commitment.
 
@@ -316,7 +318,7 @@ Hyper + A
 Control + Shift + T
 ```
 
-are command gestures. They should not normally type `d`, `a`, or `t` into the focused application.
+are command gestures rather than text-selection gestures. Hyper currently has a known leakage edge, described later, in which the command letter can also reach the focused application.
 
 Keeping these systems conceptually distinct makes a heavily customized keyboard easier to reason about.
 
