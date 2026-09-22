@@ -737,29 +737,26 @@ implementation.
 
 # 21. Closing: the keyboard as a personal language
 
-Most keyboards present themselves as fixed objects.
+Most keyboards arrive with a vocabulary already decided for them.
 
-This one behaves more like a small language.
+This one has grown a vocabulary of its own.
 
-Its physical positions form the grammar. QMK supplies stable nouns. XKB adds inflection and symbol vocabulary. Meta and Hyper create command spaces. Layers change the interpretation of whole regions. Compose allows productive phrases. Host daemons turn selected events into actions.
+Ordinary typing is still ordinary typing, but around it are extra ways to say
+things: additional symbol levels, Compose sequences, command keys, mouse control,
+local dictation, and even one key whose job is to choose another key at random.
 
-The design is technical, but its purpose is personal.
+The design is technical because the keyboard crosses several layers of the
+system, but the reason for all of that engineering is personal. Each unusual
+feature exists because Nova wanted to be able to do something from the keyboard
+that an ordinary keyboard did not make convenient enough.
 
-It reflects a preference for:
+Some of those wants were practical. Some were about control or locality. Some
+were about symbols that deserved to be easy to type. And one began as a family
+joke.
 
-- stable interfaces;
-- free software;
-- explicit control;
-- recoverable configuration;
-- meaningful distinctions;
-- symbols worth remembering;
-- and room for delight alongside serious engineering.
-
-The Any Key is not an exception to the architecture.
-
-It is the purest expression of it.
-
-A neutral physical identity travels cleanly through every layer, reaches the one component responsible for its meaning, and produces exactly one carefully unconstrained result.
+The Any Key may be the best summary of the whole project. It was not necessary.
+It was funny enough to build anyway, useful enough to teach something important,
+and just useful enough afterward to earn its place.
 
 That is a great deal of engineering to type the wrong character on purpose.
 
@@ -767,27 +764,14 @@ It is also a keyboard that unmistakably belongs to its owner.
 
 ---
 
-# Appendix A: Compact identity cross-reference
-
-| Role | QMK | Linux | Host meaning |
-| --- | --- | --- | --- |
-| Hyper | `PB_11` | `KEY_MACRO11` | `Hyper_L`, HyperKeyD trigger |
-| Compose | `PB_12` | `KEY_MACRO12` | `Multi_key` |
-| AltGr | `PB_25` | `KEY_MACRO25` | `ISO_Level3_Shift`, Mod5 |
-| Any | `PB_26` | `KEY_MACRO26` | `XF86Macro26`, GNOME shortcut |
-| Meta | `KC_APP` | `<COMP>` | `Meta_R`, virtual Meta, real Mod3 |
-| Menu | `KC_MENU` | `<PROP>` | `Menu` |
-| Whisper | `PB_28` | `KEY_MACRO28` | Local release-to-finalize dictation service |
-| Level5 | `PB_29` | `KEY_MACRO29` | `ISO_Level5_Shift`, Mod2 |
-
-# Appendix B: Runtime diagrams
+# Appendix A: Runtime diagrams
 
 ## Any Key
 
 ```text
 press physical Any key
     ↓
-stable programmable identity
+programmable-button event
     ↓
 host-side Any action
     ↓
@@ -799,7 +783,7 @@ one randomly chosen ordinary character
 ```text
 hold physical Hyper key
     ↓
-stable Hyper identity
+Hyper key event
     ↓
 HyperKeyD arms
     ↓
