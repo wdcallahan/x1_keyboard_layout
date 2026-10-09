@@ -638,6 +638,12 @@ For fixed special keys, legends should match the stable intended behavior:
 
 **Mouse keycap legend decision (2026-10-08):** Use the standardized graphical **Mouse** symbol, **IEC 60417-5990**, for the printed legend on the physical NumLock-position / Mouse-layer key. The symbol resembles a two-button mouse; that is acceptable and preferred to the Unicode three-button mouse pictograph (`🖱`, U+1F5B1) because the IEC equipment symbol is standardized. Use vector artwork for the eventual keycap print; this symbol is not a Unicode character. This decision changes the *printed legend only*, not the firmware mouse-layer behavior. [IEC 60417-5990 vector reference](https://commons.wikimedia.org/wiki/File:IEC_60417_-_Ref-No_5990.svg).
 
+**Further keycap-artwork intentions (2026-10-08; artwork not finalized):**
+
+- **Whisper / Dictate:** Use a microphone symbol in the style of an electronics schematic rather than a consumer emoji. The current Unicode approximation in the draft keyboard rendering is only a placeholder; the desired final keycap artwork is schematic-adjacent. Do not confuse the intended drawing with a documented standard or an exact Unicode code point.
+- **Level5 (Insert hold):** Replace the circled `5` draft placeholder with a custom **three-headed vertical arrow**. It should visually extend the family of the ordinary single-headed Shift arrow and double-headed AltGr arrow. This is a proposed custom keycap graphic, not an existing Unicode character.
+- **Super:** The planned `⌘` (U+2318, PLACE OF INTEREST SIGN) is not merely a borrowed Apple Command pictogram: Unicode also annotates it as the **operating system key (ISO/IEC 9995-7)**; IEC 60417-6090 is the corresponding operating-system-key graphic. That makes it a documented fit for a Linux Super/OS key. [Unicode names list](https://www.unicode.org/Public/UCD/latest/charts/nameslist/2300/) and [IEC symbol illustration](https://commons.wikimedia.org/wiki/File:ISOIEC-9995-7-099--IEC-60417-6090--Symbol-for-Operating-System-Key.svg).
+
 For relegendable keys, the printed legend may change with software bindings, but the firmware identity should remain stable.
 
 ---
