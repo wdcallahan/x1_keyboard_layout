@@ -636,6 +636,8 @@ For fixed special keys, legends should match the stable intended behavior:
 | Whisper | Local speech-to-text push-to-talk trigger. |
 | Mouse | Mouse layer toggle on NumLock position. |
 
+**Mouse keycap legend decision (2026-10-08):** Use the standardized graphical **Mouse** symbol, **IEC 60417-5990**, for the printed legend on the physical NumLock-position / Mouse-layer key. The symbol resembles a two-button mouse; that is acceptable and preferred to the Unicode three-button mouse pictograph (`🖱`, U+1F5B1) because the IEC equipment symbol is standardized. Use vector artwork for the eventual keycap print; this symbol is not a Unicode character. This decision changes the *printed legend only*, not the firmware mouse-layer behavior. [IEC 60417-5990 vector reference](https://commons.wikimedia.org/wiki/File:IEC_60417_-_Ref-No_5990.svg).
+
 For relegendable keys, the printed legend may change with software bindings, but the firmware identity should remain stable.
 
 ---
